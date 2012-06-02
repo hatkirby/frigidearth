@@ -13,9 +13,12 @@ import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Toolkit;
 import java.awt.Transparency;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JFrame;
 
@@ -25,8 +28,9 @@ import javax.swing.JFrame;
  */
 public class Main
 {
-    static final int GAME_WIDTH = 320;
-    static final int GAME_HEIGHT = 240;
+    public static final int GAME_WIDTH = 320;
+    public static final int GAME_HEIGHT = 240;
+    public static final int FPS = (1000 / 60); // 60 fps
     
     private static JFrame mainWindow;
     private static Color[][] grid;
@@ -34,6 +38,7 @@ public class Main
     private static int drawOffsetY = 0;
     private static Canvas gameCanvas;
     private static List<Renderable> renderables = new CopyOnWriteArrayList<Renderable>();
+    private static Stack<Inputable> inputables = new Stack<Inputable>();
     private static GameState gameState;
     
     public static void main(String[] args)
@@ -45,31 +50,82 @@ public class Main
         mainWindow.setSize(GAME_WIDTH*2, GAME_HEIGHT*2);
         mainWindow.setLocation(GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().x-GAME_WIDTH, GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().y-GAME_HEIGHT);
         mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainWindow.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent ke)
+            {
+                // No me importa
+            }
+
+            @Override
+            public void keyPressed(KeyEvent ke)
+            {
+                inputables.peek().processInput(ke);
+                gameState.tick();
+            }
+
+            @Override
+            public void keyReleased(KeyEvent ke)
+            {
+                // No me importa
+            }
+        });
         mainWindow.add(gameCanvas);
         mainWindow.setVisible(true);
         
         gameCanvas.createBufferStrategy(2);
         
-        gameState = new TileGameState();
-        renderables.add(gameState);
+        setGameState(new MapViewGameState());
         
         gameState.tick();
         
+        long waitTime = System.nanoTime() + (1000000*FPS);
         for (;;)
         {
-            render(gameCanvas);
-            
-            try
+            if (System.nanoTime() > waitTime)
             {
-                Thread.sleep(10);
-            } catch (InterruptedException ex)
-            {
-                //Nothing
+                render(gameCanvas);
+                waitTime = System.nanoTime() + (1000000*FPS);
             }
         }
     }
     
-    public static void render(Canvas gameCanvas)
+    public static void setGameState(GameState m_gameState)
+    {
+        renderables.clear();
+        inputables.clear();
+        
+        gameState = m_gameState;
+        renderables.add(gameState);
+        inputables.push(gameState);
+    }
+    
+    public static void addRenderable(Renderable renderable)
+    {
+        renderables.add(renderable);
+    }
+    
+    public static void removeRenderable(Renderable renderable)
+    {
+        renderables.remove(renderable);
+    }
+    
+    public static void addInputable(Inputable inputable)
+    {
+        inputables.push(inputable);
+    }
+    
+    public static void removeInputable(Inputable inputable)
+    {
+        if (inputables.peek() == inputable)
+        {
+            inputables.pop();
+        } else {
+            throw new IllegalStateException("Inputable to be removed must be at the top of the stack");
+        }
+    }
+    
+    private static void render(Canvas gameCanvas)
     {
         BufferStrategy buffer = gameCanvas.getBufferStrategy();
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();

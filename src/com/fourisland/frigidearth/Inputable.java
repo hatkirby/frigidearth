@@ -4,11 +4,13 @@
  */
 package com.fourisland.frigidearth;
 
+import java.awt.event.KeyEvent;
+
 /**
  *
  * @author hatkirby
  */
-public interface GameState extends Renderable, Inputable
+public interface Inputable
 {
-    public void tick();
+    public void processInput(KeyEvent e);
 }
