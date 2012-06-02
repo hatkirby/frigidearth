@@ -10,5 +10,5 @@ package com.fourisland.frigidearth;
  */
 public interface GameState extends Renderable, Inputable
 {
-    public void tick();
+    
 }

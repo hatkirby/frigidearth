@@ -61,7 +61,6 @@ public class Main
             public void keyPressed(KeyEvent ke)
             {
                 inputables.peek().processInput(ke);
-                gameState.tick();
             }
 
             @Override
@@ -76,8 +75,6 @@ public class Main
         gameCanvas.createBufferStrategy(2);
         
         setGameState(new MapViewGameState());
-        
-        gameState.tick();
         
         long waitTime = System.nanoTime() + (1000000*FPS);
         for (;;)

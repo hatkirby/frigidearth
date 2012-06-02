@@ -37,22 +37,6 @@ public class MapViewGameState implements GameState
             }
         }
     }
-    
-    public void tick()
-    {
-        Random r = new Random();
-        
-        if (r.nextBoolean())
-        {
-            for (int x=0; x<GAME_WIDTH; x++)
-            {
-                for (int y=0; y<GAME_HEIGHT; y++)
-                {
-                    grid[x][y] = new Color(r.nextInt(256), r.nextInt(256), r.nextInt(256));
-                }
-            }
-        }
-    }
 
     public void render(Graphics2D g)
     {
@@ -67,9 +51,7 @@ public class MapViewGameState implements GameState
         }
         
         // Render player
-        g.setColor(Color.white);
-        g.setFont(new Font("Lucida Sans", Font.BOLD, 16));
-        g.drawString("@", playerx*TILE_WIDTH+3, (playery+1)*TILE_HEIGHT);
+        g.drawImage(SystemFont.getCharacter('@'), playerx*TILE_WIDTH, playery*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
     }
     
     public void processInput(KeyEvent e)
@@ -97,6 +79,21 @@ public class MapViewGameState implements GameState
             if (playery < GAME_HEIGHT - 1)
             {
                 playery++;
+            }
+        } else {
+            return;
+        }
+        
+        Random r = new Random();
+        
+        if (r.nextBoolean())
+        {
+            for (int x=0; x<GAME_WIDTH; x++)
+            {
+                for (int y=0; y<GAME_HEIGHT; y++)
+                {
+                    grid[x][y] = new Color(r.nextInt(256), r.nextInt(256), r.nextInt(256));
+                }
             }
         }
     }
