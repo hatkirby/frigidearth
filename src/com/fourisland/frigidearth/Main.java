@@ -28,8 +28,8 @@ import javax.swing.JFrame;
  */
 public class Main
 {
-    public static final int GAME_WIDTH = 320;
-    public static final int GAME_HEIGHT = 240;
+    public static final int GAME_WIDTH = 640;
+    public static final int GAME_HEIGHT = 480;
     public static final int FPS = (1000 / 60); // 60 fps
     
     private static JFrame mainWindow;
