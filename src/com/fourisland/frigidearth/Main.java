@@ -4,11 +4,19 @@
  */
 package com.fourisland.frigidearth;
 
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.util.Random;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
+import java.awt.Transparency;
+import java.awt.image.BufferStrategy;
+import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JFrame;
 
 /**
@@ -17,75 +25,84 @@ import javax.swing.JFrame;
  */
 public class Main
 {
-    static final int GAME_WIDTH = 15;
-    static final int GAME_HEIGHT = 10;
-    static int TILE_WIDTH = 32;
-    static int TILE_HEIGHT = 32;
+    static final int GAME_WIDTH = 320;
+    static final int GAME_HEIGHT = 240;
     
     private static JFrame mainWindow;
     private static Color[][] grid;
     private static int drawOffsetX = 0;
     private static int drawOffsetY = 0;
+    private static Canvas gameCanvas;
+    private static List<Renderable> renderables = new CopyOnWriteArrayList<Renderable>();
+    private static GameState gameState;
     
     public static void main(String[] args)
     {
-        mainWindow = new JFrame("Frigid Earth");
-        mainWindow.setSize(GAME_WIDTH*TILE_WIDTH, GAME_HEIGHT*TILE_HEIGHT + mainWindow.getInsets().top);
+        gameCanvas = new Canvas();
+        
+        mainWindow = new JFrame();
+        mainWindow.setTitle("Frigid Earth");
+        mainWindow.setSize(GAME_WIDTH*2, GAME_HEIGHT*2);
+        mainWindow.setLocation(GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().x-GAME_WIDTH, GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().y-GAME_HEIGHT);
         mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainWindow.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent ce)
-            {
-                drawOffsetX = 0;
-                drawOffsetY = 0;
-                
-                TILE_WIDTH = mainWindow.getContentPane().getWidth() / GAME_WIDTH;
-                drawOffsetX = mainWindow.getWidth() % GAME_WIDTH / 2;
-                TILE_HEIGHT = mainWindow.getContentPane().getHeight() / GAME_HEIGHT;
-                drawOffsetY = mainWindow.getHeight() % GAME_HEIGHT / 2;
-                
-                if (TILE_WIDTH > TILE_HEIGHT)
-                {
-                    TILE_WIDTH = TILE_HEIGHT;
-                    drawOffsetX = (mainWindow.getContentPane().getWidth() - (GAME_WIDTH * TILE_WIDTH)) / 2;
-                } else if (TILE_HEIGHT > TILE_WIDTH)
-                {
-                    TILE_HEIGHT = TILE_WIDTH;
-                    drawOffsetY = (mainWindow.getContentPane().getHeight() - (GAME_HEIGHT * TILE_HEIGHT)) / 2;
-                }
-                
-                redrawScreen();
-            }
-        });
+        mainWindow.add(gameCanvas);
         mainWindow.setVisible(true);
         
-        Random r = new Random();
-        grid = new Color[GAME_WIDTH][GAME_HEIGHT];
+        gameCanvas.createBufferStrategy(2);
         
-        for (int x=0; x<GAME_WIDTH; x++)
+        gameState = new TileGameState();
+        renderables.add(gameState);
+        
+        gameState.tick();
+        
+        for (;;)
         {
-            for (int y=0; y<GAME_HEIGHT; y++)
+            render(gameCanvas);
+            
+            try
             {
-                grid[x][y] = new Color(r.nextInt(256), r.nextInt(256), r.nextInt(256));
+                Thread.sleep(10);
+            } catch (InterruptedException ex)
+            {
+                //Nothing
             }
         }
-        
-        redrawScreen();
     }
     
-    private static void redrawScreen()
+    public static void render(Canvas gameCanvas)
     {
-        Graphics g = mainWindow.getGraphics();
-        g.setColor(Color.black);
-        g.fillRect(0, 0, mainWindow.getWidth(), mainWindow.getHeight());
+        BufferStrategy buffer = gameCanvas.getBufferStrategy();
+        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice device = env.getDefaultScreenDevice();
+        GraphicsConfiguration config = device.getDefaultConfiguration();
+        BufferedImage vImg = config.createCompatibleImage(GAME_WIDTH, GAME_HEIGHT, Transparency.TRANSLUCENT);
+        Graphics2D g = vImg.createGraphics();
         
-        for (int x=0; x<GAME_WIDTH; x++)
+        for (Renderable renderable : renderables)
         {
-            for (int y=0; y<GAME_HEIGHT; y++)
-            {
-                g.setColor(grid[x][y]);
-                g.fillRect(x*TILE_WIDTH + drawOffsetX, y*TILE_HEIGHT + drawOffsetY + mainWindow.getInsets().top, TILE_WIDTH, TILE_HEIGHT);
-            }
+            renderable.render(g);
         }
+
+        do {
+            do {
+                float wt = mainWindow.getWidth() / (float) GAME_WIDTH;
+                float ht = (mainWindow.getHeight() - mainWindow.getInsets().top) / (float) GAME_HEIGHT;
+                int renderWidth = Math.round(Math.min(wt, ht) * GAME_WIDTH);
+                int renderHeight = Math.round(Math.min(wt, ht) * GAME_HEIGHT);
+                int renderX = (mainWindow.getWidth()/2)-(renderWidth/2);
+                int renderY = ((mainWindow.getHeight()-mainWindow.getInsets().top)/2)-(renderHeight/2);
+                
+                Graphics g2 = buffer.getDrawGraphics();
+                g2.setColor(Color.BLACK);
+                g2.fillRect(0, 0, mainWindow.getWidth(), mainWindow.getHeight());
+                g2.drawImage(vImg, renderX, renderY, renderWidth, renderHeight, gameCanvas);
+                g2.dispose();
+            } while (buffer.contentsRestored());
+
+            buffer.show();
+        } while (buffer.contentsLost());
+
+        
+        Toolkit.getDefaultToolkit().sync();
     }
 }
