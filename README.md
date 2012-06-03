@@ -1,4 +1,10 @@
-frigidearth
+Frigid Earth
 ===========
 
-2012 seven day rougelike entry
+A seven day roguelike about being the last person left on an Earth that has become too cold to sustain life.
+
+This project is still being worked on! I'm posting daily updates about my progress on my blog:
+
+# [Day 1](http://www.fourisland.com/2012/06/frigid-earth-day-1/)
+
+&copy; 2012 Starla Insigna

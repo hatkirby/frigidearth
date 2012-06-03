@@ -150,6 +150,47 @@ public class MapViewGameState implements GameState
                 }
             }
         }
+        
+        int newx = 0;
+        int newy = 0;
+        int ways = 0;
+        int state = 0;
+        while (state != 10)
+        {
+            for (int testing = 0; testing < 1000; testing++)
+            {
+                newx = Functions.random(1, GAME_WIDTH-1);
+                newy = Functions.random(1, GAME_HEIGHT-2);
+                ways = 4;
+                
+                for (Direction dir : Direction.values())
+                {
+                    Point to = dir.to(new Point(newx, newy));
+                    if ((grid[to.x][to.y] == Tile.DirtFloor) || (grid[to.x][to.y] == Tile.Corridor))
+                    {
+                        ways--;
+                    }
+                }
+                
+                if (state == 0)
+                {
+                    if (ways == 0)
+                    {
+                        grid[newx][newy] = Tile.UpStairs;
+                        state = 1;
+                        break;
+                    }
+                } else if (state == 1)
+                {
+                    if (ways == 0)
+                    {
+                        grid[newx][newy] = Tile.DownStairs;
+                        state = 10;
+                        break;
+                    }
+                }
+            }
+        }
     }
     
     private boolean makeRoom(int x, int y, Direction direction)
