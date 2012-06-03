@@ -7,6 +7,8 @@ package com.fourisland.frigidearth;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -29,6 +31,7 @@ public class MapViewGameState implements GameState
     private final int[][] OCTET_MULTIPLIERS = new int[][] {new int[] {1,0,0,-1,-1,0,0,1}, new int[] {0,1,-1,0,0,-1,1,0}, new int[] {0,1,1,0,0,-1,-1,0}, new int[] {1,0,0,1,-1,0,0,-1}};
     private Tile[][] grid;
     private boolean[][] gridLighting;
+    private List<Room> rooms = new ArrayList<Room>();
     private int playerx = 4;
     private int playery = 4;
     private int viewportx = 0;
@@ -52,7 +55,7 @@ public class MapViewGameState implements GameState
             }
         }
         
-        makeRoom(GAME_WIDTH/2, GAME_HEIGHT/2, Functions.random(0, 3));
+        makeRoom(GAME_WIDTH/2, GAME_HEIGHT/2, Direction.getRandomDirection());
         playerx = GAME_WIDTH/2;
         playery = GAME_HEIGHT/2;
         
@@ -70,62 +73,62 @@ public class MapViewGameState implements GameState
             int xmod = 0;
             int newy = 0;
             int ymod = 0;
-            int validTile = -1;
+            Direction validTile = null;
             for (int testing = 0; testing < 1000; testing++)
             {
                 newx = Functions.random(1, GAME_WIDTH-1);
                 newy = Functions.random(1, GAME_HEIGHT-1);
-                validTile = -1;
+                validTile = null;
                 
                 if ((grid[newx][newy] == Tile.DirtWall) || (grid[newx][newy] == Tile.Corridor))
                 {
                     if ((grid[newx][newy+1] == Tile.DirtFloor) || (grid[newx][newy+1] == Tile.Corridor))
                     {
-                        validTile = 0;
+                        validTile = Direction.North;
                         xmod = 0;
                         ymod = -1;
                     } else if ((grid[newx-1][newy] == Tile.DirtFloor) || (grid[newx-1][newy] == Tile.Corridor))
                     {
-                        validTile = 1;
+                        validTile = Direction.East;
                         xmod = 1;
                         ymod = 0;
                     } else if ((grid[newx][newy-1] == Tile.DirtFloor) || (grid[newx][newy-1] == Tile.Corridor))
                     {
-                        validTile = 2;
+                        validTile = Direction.South;
                         xmod = 0;
                         ymod = 1;
                     } else if ((grid[newx+1][newy] == Tile.DirtFloor) || (grid[newx+1][newy] == Tile.Corridor))
                     {
-                        validTile = 3;
+                        validTile = Direction.West;
                         xmod = -1;
                         ymod = 0;
                     }
                     
-                    if (validTile > -1)
+                    if (validTile != null)
                     {
                         if (grid[newx][newy+1] == Tile.Door)
                         {
-                            validTile = -1;
+                            validTile = null;
                         } else if (grid[newx-1][newy] == Tile.Door)
                         {
-                            validTile = -1;
+                            validTile = null;
                         } else if (grid[newx][newy-1] == Tile.Door)
                         {
-                            validTile = -1;
+                            validTile = null;
                         } else if (grid[newx+1][newy] == Tile.Door)
                         {
-                            validTile = -1;
+                            validTile = null;
                         }
                     }
                     
-                    if (validTile > -1)
+                    if (validTile != null)
                     {
                         break;
                     }
                 }
             }
             
-            if (validTile > -1)
+            if (validTile != null)
             {
                 if (Functions.random(0, 100) <= 75)
                 {
@@ -146,225 +149,96 @@ public class MapViewGameState implements GameState
         }
     }
     
-    private boolean makeRoom(int x, int y, int direction)
+    private boolean makeRoom(int x, int y, Direction direction)
     {
         int width = Functions.random(MIN_ROOM_WIDTH, MAX_ROOM_WIDTH);
         int height = Functions.random(MIN_ROOM_HEIGHT, MAX_ROOM_HEIGHT);
         Tile floor = Tile.DirtFloor;
         Tile wall = Tile.DirtWall;
-        int dir = 0;
+        Room room = null;
         
-        if ((direction > 0) && (direction < 4))
+        switch (direction)
         {
-            dir = direction;
-        }
-        
-        switch (dir)
-        {
-            case 0: // North
-                for (int ytemp=y; ytemp > (y-height); ytemp--)
-                {
-                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
-                    {
-                        return false;
-                    }
-                    
-                    for (int xtemp=(x-width/2); xtemp < (x+(width+1)/2); xtemp++)
-                    {
-                        if ((xtemp < 0) || (xtemp > GAME_WIDTH))
-                        {
-                            return false;
-                        }
-
-                        if (grid[xtemp][ytemp] != Tile.Unused)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                
-                for (int ytemp = y; ytemp > (y-height); ytemp--)
-                {
-                    for (int xtemp = (x-width/2); xtemp < (x+(width+1)/2); xtemp++)
-                    {
-                        if (xtemp == (x-width/2))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (xtemp == (x+(width-1)/2))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (ytemp == y)
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (ytemp == (y-height+1))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else {
-                            grid[xtemp][ytemp] = floor;
-                        }
-                    }
-                }
+            case North:
+                room = new Room(x-width/2, y-height, width+1, height+1, true);
                 
                 break;
                 
-            case 1: // East
-                for (int ytemp=(y-height/2); ytemp < (y+(height+1)/2); ytemp++)
-                {
-                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
-                    {
-                        return false;
-                    }
-                    
-                    for (int xtemp=x; xtemp < (x+width); xtemp++)
-                    {
-                        if ((xtemp < 0) || (xtemp > GAME_WIDTH))
-                        {
-                            return false;
-                        }
-
-                        if (grid[xtemp][ytemp] != Tile.Unused)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                
-                for (int ytemp=(y-height/2); ytemp < (y+(height+1)/2); ytemp++)
-                {
-                    for (int xtemp=x; xtemp < (x+width); xtemp++)
-                    {
-                        if (xtemp == x)
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (xtemp == (x+width-1))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (ytemp == (y-height/2))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (ytemp == (y+(height-1)/2))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else {
-                            grid[xtemp][ytemp] = floor;
-                        }
-                    }
-                }
+            case East:
+                room = new Room(x, y-height/2, width+1, height+1, true);
                 
                 break;
                 
-            case 2: // South
-                for (int ytemp=y; ytemp < (y+height); ytemp++)
-                {
-                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
-                    {
-                        return false;
-                    }
-                    
-                    for (int xtemp=(x-width/2); xtemp < (x+(width+1)/2); xtemp++)
-                    {
-                        if ((xtemp < 0) || (xtemp > GAME_WIDTH))
-                        {
-                            return false;
-                        }
-
-                        if (grid[xtemp][ytemp] != Tile.Unused)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                
-                for (int ytemp=y; ytemp < (y+height); ytemp++)
-                {
-                    for (int xtemp = (x-width/2); xtemp < (x+(width+1)/2); xtemp++)
-                    {
-                        if (xtemp == (x-width/2))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (xtemp == (x+(width-1)/2))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (ytemp == y)
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (ytemp == (y+height-1))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else {
-                            grid[xtemp][ytemp] = floor;
-                        }
-                    }
-                }
+            case South:
+                room = new Room(x-width/2, y, width+1, height+1, true);
                 
                 break;
                 
-            case 3: // West
-                for (int ytemp=(y-height/2); ytemp < (y+(height+1)/2); ytemp++)
-                {
-                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
-                    {
-                        return false;
-                    }
-                    
-                    for (int xtemp=x; xtemp > (x-width); xtemp--)
-                    {
-                        if ((xtemp < 0) || (xtemp > GAME_WIDTH))
-                        {
-                            return false;
-                        }
-
-                        if (grid[xtemp][ytemp] != Tile.Unused)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                
-                for (int ytemp=(y-height/2); ytemp < (y+(height+1)/2); ytemp++)
-                {
-                    for (int xtemp=x; xtemp > (x-width); xtemp--)
-                    {
-                        if (xtemp == x)
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (xtemp == (x-width+1))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (ytemp == (y-height/2))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else if (ytemp == (y+(height-1)/2))
-                        {
-                            grid[xtemp][ytemp] = wall;
-                        } else {
-                            grid[xtemp][ytemp] = floor;
-                        }
-                    }
-                }
+            case West:
+                room = new Room(x-width, y-height/2, width+1, height+1, true);
                 
                 break;
         }
+        
+        for (int ytemp=room.getY(); ytemp < room.getY()+room.getHeight(); ytemp++)
+        {
+            if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
+            {
+                return false;
+            }
+
+            for (int xtemp=room.getX(); xtemp < room.getX()+room.getWidth(); xtemp++)
+            {
+                if ((xtemp < 0) || (xtemp > GAME_WIDTH))
+                {
+                    return false;
+                }
+
+                if (grid[xtemp][ytemp] != Tile.Unused)
+                {
+                    return false;
+                }
+            }
+        }
+
+        for (int ytemp=room.getY(); ytemp < room.getY()+room.getHeight(); ytemp++)
+        {
+            for (int xtemp=room.getX(); xtemp < room.getX()+room.getWidth(); xtemp++)
+            {
+                if (xtemp == room.getX())
+                {
+                    grid[xtemp][ytemp] = wall;
+                } else if (xtemp == room.getX()+room.getWidth()-1)
+                {
+                    grid[xtemp][ytemp] = wall;
+                } else if (ytemp == room.getY())
+                {
+                    grid[xtemp][ytemp] = wall;
+                } else if (ytemp == room.getY()+room.getHeight()-1)
+                {
+                    grid[xtemp][ytemp] = wall;
+                } else {
+                    grid[xtemp][ytemp] = floor;
+                }
+            }
+        }
+        
+        rooms.add(room);
         
         return true;
     }
     
-    private boolean makeCorridor(int x, int y, int direction)
+    private boolean makeCorridor(int x, int y, Direction direction)
     {
         int length = Functions.random(MIN_CORRIDOR_LENGTH, MAX_CORRIDOR_LENGTH);
         Tile floor = Tile.Corridor;
-        int dir = 0;
-        if ((direction > 0) && (direction < 4))
-        {
-            dir = direction;
-        }
         
         int xtemp = 0;
         int ytemp = 0;
         
-        switch (dir)
+        switch (direction)
         {
-            case 0: // North
+            case North:
                 if ((x < 0) || (x > GAME_WIDTH))
                 {
                     return false;
@@ -392,7 +266,7 @@ public class MapViewGameState implements GameState
                 
                 break;
                 
-            case 1: // East
+            case East:
                 if ((y < 0) || (y > GAME_HEIGHT))
                 {
                     return false;
@@ -420,7 +294,7 @@ public class MapViewGameState implements GameState
                 
                 break;
                 
-            case 2: // South
+            case South:
                 if ((x < 0) || (x > GAME_WIDTH))
                 {
                     return false;
@@ -448,7 +322,7 @@ public class MapViewGameState implements GameState
                 
                 break;
                 
-            case 3: // West
+            case West:
                 if ((y < 0) || (y > GAME_HEIGHT))
                 {
                     return false;
