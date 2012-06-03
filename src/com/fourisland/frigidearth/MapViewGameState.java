@@ -26,7 +26,9 @@ public class MapViewGameState implements GameState
     private final int MIN_ROOM_HEIGHT = 7;
     private final int MAX_CORRIDOR_LENGTH = 6;
     private final int MIN_CORRIDOR_LENGTH = 2;
+    private final int[][] OCTET_MULTIPLIERS = new int[][] {new int[] {1,0,0,-1,-1,0,0,1}, new int[] {0,1,-1,0,0,-1,1,0}, new int[] {0,1,1,0,0,-1,-1,0}, new int[] {1,0,0,1,-1,0,0,-1}};
     private Tile[][] grid;
+    private boolean[][] gridLighting;
     private int playerx = 4;
     private int playery = 4;
     private int viewportx = 0;
@@ -35,6 +37,7 @@ public class MapViewGameState implements GameState
     public MapViewGameState()
     {
         grid = new Tile[GAME_WIDTH][GAME_HEIGHT];
+        gridLighting = new boolean[GAME_WIDTH][GAME_HEIGHT];
         
         for (int x=0; x<GAME_WIDTH; x++)
         {
@@ -476,6 +479,86 @@ public class MapViewGameState implements GameState
         
         return true;
     }
+    
+    private void calculateFieldOfView()
+    {
+        for (int x=0; x<GAME_WIDTH; x++)
+        {
+            for (int y=0; y<GAME_HEIGHT; y++)
+            {
+                gridLighting[x][y] = false;
+            }
+        }
+        
+        for (int i=0; i<8; i++)
+        {
+            castLight(playerx, playery, 1, 1.0, 0.0, Math.max(VIEWPORT_WIDTH/2, VIEWPORT_HEIGHT/2), OCTET_MULTIPLIERS[0][i], OCTET_MULTIPLIERS[1][i], OCTET_MULTIPLIERS[2][i], OCTET_MULTIPLIERS[3][i], 0);
+        }
+    }
+    
+    private void castLight(int cx, int cy, int row, double start, double end, int radius, int xx, int xy, int yx, int yy, int id)
+    {
+        if (start < end)
+        {
+            return;
+        }
+        
+        int r2 = radius * radius;
+        for (int j=row; j<radius+1; j++)
+        {
+            int dx = -j-1;
+            int dy = -j;
+            boolean blocked = false;
+            double newStart = 0.0;
+            
+            while (dx <= 0)
+            {
+                dx++;
+                
+                int x = cx + dx*xx + dy*xy;
+                int y = cy + dx*yx + dy*yy;
+                double l_slope = ((double)dx-0.5)/((double)dy+0.5);
+                double r_slope = ((double)dx+0.5)/((double)dy-0.5);
+                
+                if (start < r_slope)
+                {
+                    continue;
+                } else if (end > l_slope)
+                {
+                    break;
+                } else {
+                    if ((dx*dx + dy*dy) < r2)
+                    {
+                        gridLighting[x][y] = true;
+                    }
+                    
+                    if (blocked)
+                    {
+                        if (grid[x][y].isBlocked())
+                        {
+                            newStart = r_slope;
+                            continue;
+                        } else {
+                            blocked = false;
+                            start = newStart;
+                        }
+                    } else {
+                        if ((grid[x][y].isBlocked()) && (j < radius))
+                        {
+                            blocked = true;
+                            castLight(cx, cy, j+1, start, l_slope, radius, xx, xy, yx, yy, id+1);
+                            newStart = r_slope;
+                        }
+                    }
+                }
+            }
+            
+            if (blocked)
+            {
+                break;
+            }
+        }
+    }
 
     public void render(Graphics2D g)
     {
@@ -484,18 +567,21 @@ public class MapViewGameState implements GameState
         {
             for (int y=viewporty; y<viewporty+VIEWPORT_HEIGHT; y++)
             {
-                char displayChar = grid[x][y].getDisplayCharacter();
-                Color displayColor = grid[x][y].getBackgroundColor();
-                
-                if (!displayColor.equals(Color.BLACK))
+                if (gridLighting[x][y])
                 {
-                    g.setColor(displayColor);
-                    g.fillRect((x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
-                }
-                
-                if (displayChar != ' ')
-                {
-                    g.drawImage(SystemFont.getCharacter(grid[x][y].getDisplayCharacter()), (x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+                    char displayChar = grid[x][y].getDisplayCharacter();
+                    Color displayColor = grid[x][y].getBackgroundColor();
+
+                    if (!displayColor.equals(Color.BLACK))
+                    {
+                        g.setColor(displayColor);
+                        g.fillRect((x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+                    }
+
+                    if (displayChar != ' ')
+                    {
+                        g.drawImage(SystemFont.getCharacter(grid[x][y].getDisplayCharacter()), (x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+                    }
                 }
             }
         }
@@ -535,6 +621,7 @@ public class MapViewGameState implements GameState
         }
         
         adjustViewport();
+        calculateFieldOfView();
     }
     
     private void adjustViewport()
