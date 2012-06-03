@@ -26,7 +26,7 @@ import javax.swing.JFrame;
  *
  * @author hatkirby
  */
-public class Main
+public class Main extends Canvas
 {
     public static final int GAME_WIDTH = 640;
     public static final int GAME_HEIGHT = 480;
@@ -43,7 +43,7 @@ public class Main
     
     public static void main(String[] args)
     {
-        gameCanvas = new Canvas();
+        gameCanvas = new Main();
         
         mainWindow = new JFrame();
         mainWindow.setTitle("Frigid Earth");
@@ -61,6 +61,7 @@ public class Main
             public void keyPressed(KeyEvent ke)
             {
                 inputables.peek().processInput(ke);
+                render(gameCanvas);
             }
 
             @Override
@@ -75,16 +76,6 @@ public class Main
         gameCanvas.createBufferStrategy(2);
         
         setGameState(new MapViewGameState());
-        
-        long waitTime = System.nanoTime() + (1000000*FPS);
-        for (;;)
-        {
-            if (System.nanoTime() > waitTime)
-            {
-                render(gameCanvas);
-                waitTime = System.nanoTime() + (1000000*FPS);
-            }
-        }
     }
     
     public static void setGameState(GameState m_gameState)
@@ -95,6 +86,8 @@ public class Main
         gameState = m_gameState;
         renderables.add(gameState);
         inputables.push(gameState);
+        
+        render(gameCanvas);
     }
     
     public static void addRenderable(Renderable renderable)
@@ -158,4 +151,11 @@ public class Main
         
         Toolkit.getDefaultToolkit().sync();
     }
+
+    @Override
+    public void paint(Graphics grphcs)
+    {
+        render(this);
+    }
+    
 }
