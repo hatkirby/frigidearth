@@ -18,8 +18,8 @@ import java.util.List;
  */
 public class MapViewGameState implements GameState
 {
-    private final int TILE_WIDTH = 16;
-    private final int TILE_HEIGHT = 16;
+    private final int TILE_WIDTH = 12;
+    private final int TILE_HEIGHT = 12;
     private final int GAME_WIDTH = 100;
     private final int GAME_HEIGHT = 100;
     private final int MESSAGE_HEIGHT = 5;

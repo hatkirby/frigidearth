@@ -28,7 +28,7 @@ import javax.swing.JFrame;
  */
 public class Main extends Canvas
 {
-    public static final int GAME_WIDTH = 640;
+    public static final int GAME_WIDTH = 636;
     public static final int GAME_HEIGHT = 480;
     public static final int FPS = (1000 / 60); // 60 fps
     
