@@ -4,6 +4,7 @@
  */
 package com.fourisland.frigidearth;
 
+import java.awt.Color;
 import java.awt.Point;
 
 /**
@@ -35,5 +36,6 @@ public abstract class Mob
     }
     
     public abstract char getDisplayCharacter();
+    public abstract Color getDisplayColor();
     public abstract String getName();
 }

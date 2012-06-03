@@ -510,7 +510,7 @@ public class MapViewGameState implements GameState
 
                     if (displayChar != ' ')
                     {
-                        g.drawImage(SystemFont.getCharacter(grid[x][y].getDisplayCharacter()), (x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+                        g.drawImage(SystemFont.getCharacter(grid[x][y].getDisplayCharacter(), Color.WHITE), (x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
                     }
                 }
             }
@@ -521,12 +521,12 @@ public class MapViewGameState implements GameState
         {
             if ((gridLighting[mob.x][mob.y]) && (isInViewport(mob.x, mob.y)))
             {
-                g.drawImage(SystemFont.getCharacter(mob.getDisplayCharacter()), (mob.x-viewportx)*TILE_WIDTH, (mob.y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+                g.drawImage(SystemFont.getCharacter(mob.getDisplayCharacter(), mob.getDisplayColor()), (mob.x-viewportx)*TILE_WIDTH, (mob.y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
             }
         }
         
         // Render player
-        g.drawImage(SystemFont.getCharacter('@'), (playerx-viewportx)*TILE_WIDTH, (playery-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+        g.drawImage(SystemFont.getCharacter('@', Color.WHITE), (playerx-viewportx)*TILE_WIDTH, (playery-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
         
         // Render messages
         g.setColor(new Color(53, 63, 62));
@@ -538,7 +538,7 @@ public class MapViewGameState implements GameState
             {
                 for (int j=0; j<messages[i].length(); j++)
                 {
-                    g.drawImage(SystemFont.getCharacter(messages[i].charAt(j)), j*TILE_WIDTH, (VIEWPORT_HEIGHT+i)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+                    g.drawImage(SystemFont.getCharacter(messages[i].charAt(j), Color.WHITE), j*TILE_WIDTH, (VIEWPORT_HEIGHT+i)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
                 }
             }
         }

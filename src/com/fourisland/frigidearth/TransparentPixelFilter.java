@@ -14,9 +14,11 @@ import java.awt.image.RGBImageFilter;
 public class TransparentPixelFilter extends RGBImageFilter {
 
     private int trans;
-    public TransparentPixelFilter(int i)
+    private int replace;
+    public TransparentPixelFilter(int i, int j)
     {
         trans = i;
+        replace = j;
         
         canFilterIndexColorModel = true;
     }
@@ -28,7 +30,7 @@ public class TransparentPixelFilter extends RGBImageFilter {
         {
             return 0;
         } else {
-            return rgb;
+            return replace;
         }
     }
 

@@ -5,6 +5,7 @@
 package com.fourisland.frigidearth.mobs;
 
 import com.fourisland.frigidearth.Mob;
+import java.awt.Color;
 
 /**
  *
@@ -22,6 +23,11 @@ public class Mouse extends Mob
     public char getDisplayCharacter()
     {
         return 'm';
+    }
+    
+    public Color getDisplayColor()
+    {
+        return Color.GRAY;
     }
     
     public String getName()

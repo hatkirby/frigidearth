@@ -4,6 +4,7 @@
  */
 package com.fourisland.frigidearth;
 
+import java.awt.Color;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -12,6 +13,8 @@ import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.FilteredImageSource;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -22,9 +25,9 @@ import javax.imageio.ImageIO;
  */
 public class SystemFont
 {
-    private static BufferedImage fontGraphic = null;
+    private static Map<Color,BufferedImage> fontGraphic = new HashMap<Color,BufferedImage>();
     
-    public static void initalize()
+    public static void initalize(Color color)
     {
         try
         {
@@ -32,21 +35,22 @@ public class SystemFont
             GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
             GraphicsDevice device = env.getDefaultScreenDevice();
             GraphicsConfiguration config = device.getDefaultConfiguration();
-            fontGraphic = config.createCompatibleImage(temp.getWidth(), temp.getHeight(), Transparency.TRANSLUCENT);
-            fontGraphic.createGraphics().drawImage(Toolkit.getDefaultToolkit().createImage(new FilteredImageSource(temp.getSource(), new TransparentPixelFilter(temp.getRGB(0, 0)))),0,0,null);
+            BufferedImage g = config.createCompatibleImage(temp.getWidth(), temp.getHeight(), Transparency.TRANSLUCENT);
+            g.createGraphics().drawImage(Toolkit.getDefaultToolkit().createImage(new FilteredImageSource(temp.getSource(), new TransparentPixelFilter(temp.getRGB(0, 0), color.getRGB()))),0,0,null);
+            fontGraphic.put(color, g);
         } catch (IOException ex)
         {
             Logger.getLogger(SystemFont.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    public static BufferedImage getCharacter(char c)
+    public static BufferedImage getCharacter(char c, Color color)
     {
-        if (fontGraphic == null)
+        if (!fontGraphic.containsKey(color))
         {
-            initalize();
+            initalize(color);
         }
         
-        return fontGraphic.getSubimage((c % 16) * 12, (c / 16) * 12, 12, 12);
+        return fontGraphic.get(color).getSubimage((c % 16) * 12, (c / 16) * 12, 12, 12);
     }
 }
