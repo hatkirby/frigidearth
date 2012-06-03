@@ -15,11 +15,17 @@ public class Mouse extends Mob
     public Mouse(int x, int y)
     {
         super(x, y);
+        
+        health = 1;
     }
-    
     
     public char getDisplayCharacter()
     {
         return 'm';
+    }
+    
+    public String getName()
+    {
+        return "Mouse";
     }
 }

@@ -12,23 +12,14 @@ import java.awt.Point;
  */
 public abstract class Mob
 {
-    private int x;
-    private int y;
+    public int x;
+    public int y;
+    public int health;
     
     public Mob(int x, int y)
     {
         this.x = x;
         this.y = y;
-    }
-    
-    public int getX()
-    {
-        return x;
-    }
-    
-    public int getY()
-    {
-        return y;
     }
     
     public Point getPosition()
@@ -44,4 +35,5 @@ public abstract class Mob
     }
     
     public abstract char getDisplayCharacter();
+    public abstract String getName();
 }

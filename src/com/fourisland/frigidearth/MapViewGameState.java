@@ -519,9 +519,9 @@ public class MapViewGameState implements GameState
         // Render mobs
         for (Mob mob : mobs)
         {
-            if ((gridLighting[mob.getX()][mob.getY()]) && (mob.getX() > viewportx) && (mob.getX() < viewportx+VIEWPORT_WIDTH) && (mob.getY() > viewporty) && (mob.getY() < viewporty+VIEWPORT_HEIGHT))
+            if ((gridLighting[mob.x][mob.y]) && (isInViewport(mob.x, mob.y)))
             {
-                g.drawImage(SystemFont.getCharacter(mob.getDisplayCharacter()), (mob.getX()-viewportx)*TILE_WIDTH, (mob.getY()-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+                g.drawImage(SystemFont.getCharacter(mob.getDisplayCharacter()), (mob.x-viewportx)*TILE_WIDTH, (mob.y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
             }
         }
         
@@ -557,8 +557,31 @@ public class MapViewGameState implements GameState
                 
                 if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].isBlocked()))
                 {
-                    playerx = to.x;
-                    playery = to.y;
+                    // Check for mobs
+                    boolean foundMob = false;
+                    for (Mob mob : mobs)
+                    {
+                        if (mob.getPosition().equals(to))
+                        {
+                            printMessage("You hit the " + mob.getName().toLowerCase());
+                            mob.health--;
+                            
+                            if (mob.health <= 0)
+                            {
+                                printMessage("You killed the " + mob.getName().toLowerCase() + "!");
+                                mobs.remove(mob);
+                            }
+                            
+                            foundMob = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!foundMob)
+                    {
+                        playerx = to.x;
+                        playery = to.y;
+                    }
                 } else {
                     printMessage("Blocked: " + dir.name());
                     
@@ -568,8 +591,6 @@ public class MapViewGameState implements GameState
                 break;
                 
             default:
-                printMessage("The sky is the limit! You can also place items in the same manner, but we'll get to that later.");
-                
                 return;
         }
         
@@ -582,7 +603,7 @@ public class MapViewGameState implements GameState
             {
                 toDir = Direction.getRandomDirection();
                 Point to = toDir.to(mob.getPosition());
-                if ((isValidPosition(to.x,to.y)) &&(!grid[to.x][to.y].isBlocked()))
+                if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].isBlocked()) && (!to.equals(new Point(playerx, playery))))
                 {
                     mob.moveInDirection(toDir);
                     break;
@@ -627,6 +648,16 @@ public class MapViewGameState implements GameState
         if (x > MAP_WIDTH) return false;
         if (y < 0) return false;
         if (y > MAP_HEIGHT) return false;
+        
+        return true;
+    }
+    
+    private boolean isInViewport(int x, int y)
+    {
+        if (x < viewportx) return false;
+        if (x > viewportx+VIEWPORT_WIDTH) return false;
+        if (y < viewporty) return false;
+        if (y > viewporty+VIEWPORT_HEIGHT) return false;
         
         return true;
     }
