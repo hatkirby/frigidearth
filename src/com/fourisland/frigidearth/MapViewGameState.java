@@ -4,6 +4,7 @@
  */
 package com.fourisland.frigidearth;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 
@@ -483,7 +484,19 @@ public class MapViewGameState implements GameState
         {
             for (int y=viewporty; y<viewporty+VIEWPORT_HEIGHT; y++)
             {
-                g.drawImage(SystemFont.getCharacter(grid[x][y].getDisplayCharacter()), (x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+                char displayChar = grid[x][y].getDisplayCharacter();
+                Color displayColor = grid[x][y].getBackgroundColor();
+                
+                if (!displayColor.equals(Color.BLACK))
+                {
+                    g.setColor(displayColor);
+                    g.fillRect((x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+                }
+                
+                if (displayChar != ' ')
+                {
+                    g.drawImage(SystemFont.getCharacter(grid[x][y].getDisplayCharacter()), (x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+                }
             }
         }
         

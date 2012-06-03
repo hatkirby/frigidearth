@@ -4,6 +4,8 @@
  */
 package com.fourisland.frigidearth;
 
+import java.awt.Color;
+
 /**
  *
  * @author hatkirby
@@ -15,11 +17,6 @@ public enum Tile
         {
             return true;
         }
-        
-        public char getDisplayCharacter()
-        {
-            return 'X';
-        }
     },
     DirtWall {
         public boolean isBlocked()
@@ -27,9 +24,9 @@ public enum Tile
             return true;
         }
         
-        public char getDisplayCharacter()
+        public Color getBackgroundColor()
         {
-            return '#';
+            return new Color(96, 51, 17);
         }
     },
     DirtFloor {
@@ -38,20 +35,15 @@ public enum Tile
             return false;
         }
         
-        public char getDisplayCharacter()
+        public Color getBackgroundColor()
         {
-            return ' ';
+            return new Color(205, 127, 50);
         }
     },
     StoneWall {
         public boolean isBlocked()
         {
             return true;
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return 'X';
         }
     },
     Corridor {
@@ -64,6 +56,11 @@ public enum Tile
         {
             return '.';
         }
+        
+        public Color getBackgroundColor()
+        {
+            return new Color(182, 175, 169);
+        }
     },
     Door {
         public boolean isBlocked()
@@ -74,6 +71,11 @@ public enum Tile
         public char getDisplayCharacter()
         {
             return 'D';
+        }
+        
+        public Color getBackgroundColor()
+        {
+            return new Color(96, 51, 17);
         }
     },
     UpStairs {
@@ -100,5 +102,14 @@ public enum Tile
     };
     
     public abstract boolean isBlocked();
-    public abstract char getDisplayCharacter();
+    
+    public char getDisplayCharacter()
+    {
+        return ' ';
+    }
+    
+    public Color getBackgroundColor()
+    {
+        return Color.BLACK;
+    }
 }
