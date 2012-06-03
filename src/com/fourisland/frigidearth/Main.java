@@ -47,7 +47,7 @@ public class Main extends Canvas
         mainWindow = new JFrame();
         mainWindow.setTitle("Frigid Earth");
         mainWindow.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
-        mainWindow.setLocation(GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().x-CANVAS_WIDTH, GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().y-CANVAS_HEIGHT);
+        mainWindow.setLocation(GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().x-CANVAS_WIDTH/2, GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().y-CANVAS_HEIGHT/2);
         mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainWindow.addKeyListener(new KeyListener() {
             @Override
