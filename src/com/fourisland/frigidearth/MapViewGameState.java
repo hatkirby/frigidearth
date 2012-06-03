@@ -22,8 +22,9 @@ public class MapViewGameState implements GameState
     private final int TILE_HEIGHT = 16;
     private final int GAME_WIDTH = 100;
     private final int GAME_HEIGHT = 100;
+    private final int MESSAGE_HEIGHT = 5;
     private final int VIEWPORT_WIDTH = Main.GAME_WIDTH / TILE_WIDTH;
-    private final int VIEWPORT_HEIGHT = Main.GAME_HEIGHT / TILE_HEIGHT;
+    private final int VIEWPORT_HEIGHT = Main.GAME_HEIGHT / TILE_HEIGHT - MESSAGE_HEIGHT;
     private final int MAX_ROOM_WIDTH = 13;
     private final int MIN_ROOM_WIDTH = 7;
     private final int MAX_ROOM_HEIGHT = 13;
@@ -33,6 +34,7 @@ public class MapViewGameState implements GameState
     private final int[][] OCTET_MULTIPLIERS = new int[][] {new int[] {1,0,0,-1,-1,0,0,1}, new int[] {0,1,-1,0,0,-1,1,0}, new int[] {0,1,1,0,0,-1,-1,0}, new int[] {1,0,0,1,-1,0,0,-1}};
     private Tile[][] grid;
     private boolean[][] gridLighting;
+    private String[] messages = new String[MESSAGE_HEIGHT];
     private List<Room> rooms = new ArrayList<Room>();
     private List<Mob> mobs = new ArrayList<Mob>();
     private int playerx = 4;
@@ -525,6 +527,21 @@ public class MapViewGameState implements GameState
         
         // Render player
         g.drawImage(SystemFont.getCharacter('@'), (playerx-viewportx)*TILE_WIDTH, (playery-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+        
+        // Render messages
+        g.setColor(new Color(53, 63, 62));
+        g.fillRect(0, VIEWPORT_HEIGHT*TILE_HEIGHT, Main.GAME_WIDTH, TILE_HEIGHT*MESSAGE_HEIGHT);
+        
+        for (int i=0; i<MESSAGE_HEIGHT; i++)
+        {
+            if (messages[i] != null)
+            {
+                for (int j=0; j<messages[i].length(); j++)
+                {
+                    g.drawImage(SystemFont.getCharacter(messages[i].charAt(j)), j*TILE_WIDTH, (VIEWPORT_HEIGHT+i)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+                }
+            }
+        }
     }
     
     public void processInput(KeyEvent e)
@@ -543,12 +560,16 @@ public class MapViewGameState implements GameState
                     playerx = to.x;
                     playery = to.y;
                 } else {
+                    printMessage("Blocked: " + dir.name());
+                    
                     return;
                 }
                 
                 break;
                 
             default:
+                printMessage("The sky is the limit! You can also place items in the same manner, but we'll get to that later.");
+                
                 return;
         }
         
@@ -608,5 +629,37 @@ public class MapViewGameState implements GameState
         if (y > GAME_HEIGHT) return false;
         
         return true;
+    }
+    
+    private void printMessage(String message)
+    {
+        String temp = message;
+        
+        while (temp.length() > VIEWPORT_WIDTH)
+        {
+            String shortm = temp.substring(0, VIEWPORT_WIDTH);
+            
+            if ((temp.charAt(VIEWPORT_WIDTH) == ' ') || (shortm.endsWith(" ")))
+            {
+                pushUpMessages(shortm);
+                temp = temp.substring(VIEWPORT_WIDTH);
+            } else {
+                int lastSpace = shortm.lastIndexOf(" ");
+                pushUpMessages(shortm.substring(0, lastSpace));
+                temp = temp.substring(lastSpace);
+            }
+        }
+        
+        pushUpMessages(temp);
+    }
+    
+    private void pushUpMessages(String message)
+    {
+        for (int i=1; i<MESSAGE_HEIGHT; i++)
+        {
+            messages[i-1] = messages[i];
+        }
+        
+        messages[MESSAGE_HEIGHT-1] = message;
     }
 }
