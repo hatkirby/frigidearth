@@ -28,9 +28,8 @@ import javax.swing.JFrame;
  */
 public class Main extends Canvas
 {
-    public static final int GAME_WIDTH = 636;
-    public static final int GAME_HEIGHT = 480;
-    public static final int FPS = (1000 / 60); // 60 fps
+    public static final int CANVAS_WIDTH = 636;
+    public static final int CANVAS_HEIGHT = 480;
     
     private static JFrame mainWindow;
     private static Color[][] grid;
@@ -47,8 +46,8 @@ public class Main extends Canvas
         
         mainWindow = new JFrame();
         mainWindow.setTitle("Frigid Earth");
-        mainWindow.setSize(GAME_WIDTH*2, GAME_HEIGHT*2);
-        mainWindow.setLocation(GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().x-GAME_WIDTH, GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().y-GAME_HEIGHT);
+        mainWindow.setSize(CANVAS_WIDTH*2, CANVAS_HEIGHT*2);
+        mainWindow.setLocation(GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().x-CANVAS_WIDTH, GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint().y-CANVAS_HEIGHT);
         mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainWindow.addKeyListener(new KeyListener() {
             @Override
@@ -121,7 +120,7 @@ public class Main extends Canvas
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice device = env.getDefaultScreenDevice();
         GraphicsConfiguration config = device.getDefaultConfiguration();
-        BufferedImage vImg = config.createCompatibleImage(GAME_WIDTH, GAME_HEIGHT, Transparency.TRANSLUCENT);
+        BufferedImage vImg = config.createCompatibleImage(CANVAS_WIDTH, CANVAS_HEIGHT, Transparency.TRANSLUCENT);
         Graphics2D g = vImg.createGraphics();
         
         for (Renderable renderable : renderables)
@@ -131,10 +130,10 @@ public class Main extends Canvas
 
         do {
             do {
-                float wt = mainWindow.getWidth() / (float) GAME_WIDTH;
-                float ht = (mainWindow.getHeight() - mainWindow.getInsets().top) / (float) GAME_HEIGHT;
-                int renderWidth = Math.round(Math.min(wt, ht) * GAME_WIDTH);
-                int renderHeight = Math.round(Math.min(wt, ht) * GAME_HEIGHT);
+                float wt = mainWindow.getWidth() / (float) CANVAS_WIDTH;
+                float ht = (mainWindow.getHeight() - mainWindow.getInsets().top) / (float) CANVAS_HEIGHT;
+                int renderWidth = Math.round(Math.min(wt, ht) * CANVAS_WIDTH);
+                int renderHeight = Math.round(Math.min(wt, ht) * CANVAS_HEIGHT);
                 int renderX = (mainWindow.getWidth()/2)-(renderWidth/2);
                 int renderY = ((mainWindow.getHeight()-mainWindow.getInsets().top)/2)-(renderHeight/2);
                 

@@ -20,11 +20,11 @@ public class MapViewGameState implements GameState
 {
     private final int TILE_WIDTH = 12;
     private final int TILE_HEIGHT = 12;
-    private final int GAME_WIDTH = 100;
-    private final int GAME_HEIGHT = 100;
+    private final int MAP_WIDTH = 100;
+    private final int MAP_HEIGHT = 100;
     private final int MESSAGE_HEIGHT = 5;
-    private final int VIEWPORT_WIDTH = Main.GAME_WIDTH / TILE_WIDTH;
-    private final int VIEWPORT_HEIGHT = Main.GAME_HEIGHT / TILE_HEIGHT - MESSAGE_HEIGHT;
+    private final int VIEWPORT_WIDTH = Main.CANVAS_WIDTH / TILE_WIDTH;
+    private final int VIEWPORT_HEIGHT = Main.CANVAS_HEIGHT / TILE_HEIGHT - MESSAGE_HEIGHT;
     private final int MAX_ROOM_WIDTH = 13;
     private final int MIN_ROOM_WIDTH = 7;
     private final int MAX_ROOM_HEIGHT = 13;
@@ -44,14 +44,14 @@ public class MapViewGameState implements GameState
     
     public MapViewGameState()
     {
-        grid = new Tile[GAME_WIDTH][GAME_HEIGHT];
-        gridLighting = new boolean[GAME_WIDTH][GAME_HEIGHT];
+        grid = new Tile[MAP_WIDTH][MAP_HEIGHT];
+        gridLighting = new boolean[MAP_WIDTH][MAP_HEIGHT];
         
-        for (int x=0; x<GAME_WIDTH; x++)
+        for (int x=0; x<MAP_WIDTH; x++)
         {
-            for (int y=0; y<GAME_HEIGHT; y++)
+            for (int y=0; y<MAP_HEIGHT; y++)
             {
-                if ((x == 0) || (x == GAME_WIDTH-1) || (y == 0) || (y == GAME_HEIGHT-1))
+                if ((x == 0) || (x == MAP_WIDTH-1) || (y == 0) || (y == MAP_HEIGHT-1))
                 {
                     grid[x][y] = Tile.StoneWall;
                 } else {
@@ -60,7 +60,7 @@ public class MapViewGameState implements GameState
             }
         }
         
-        makeRoom(GAME_WIDTH/2, GAME_HEIGHT/2, Direction.getRandomDirection());
+        makeRoom(MAP_WIDTH/2, MAP_HEIGHT/2, Direction.getRandomDirection());
         
         int currentFeatures = 1;
         int objects = 300;
@@ -79,8 +79,8 @@ public class MapViewGameState implements GameState
             Direction validTile = null;
             for (int testing = 0; testing < 1000; testing++)
             {
-                newx = Functions.random(1, GAME_WIDTH-1);
-                newy = Functions.random(1, GAME_HEIGHT-1);
+                newx = Functions.random(1, MAP_WIDTH-1);
+                newy = Functions.random(1, MAP_HEIGHT-1);
                 validTile = null;
                 
                 if ((grid[newx][newy] == Tile.DirtWall) || (grid[newx][newy] == Tile.Corridor))
@@ -159,8 +159,8 @@ public class MapViewGameState implements GameState
         {
             for (int testing = 0; testing < 1000; testing++)
             {
-                newx = Functions.random(1, GAME_WIDTH-1);
-                newy = Functions.random(1, GAME_HEIGHT-2);
+                newx = Functions.random(1, MAP_WIDTH-1);
+                newy = Functions.random(1, MAP_HEIGHT-2);
                 ways = 4;
                 
                 for (Direction dir : Direction.values())
@@ -231,14 +231,14 @@ public class MapViewGameState implements GameState
         
         for (int ytemp=room.getY(); ytemp < room.getY()+room.getHeight(); ytemp++)
         {
-            if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
+            if ((ytemp < 0) || (ytemp > MAP_HEIGHT))
             {
                 return false;
             }
 
             for (int xtemp=room.getX(); xtemp < room.getX()+room.getWidth(); xtemp++)
             {
-                if ((xtemp < 0) || (xtemp > GAME_WIDTH))
+                if ((xtemp < 0) || (xtemp > MAP_WIDTH))
                 {
                     return false;
                 }
@@ -295,7 +295,7 @@ public class MapViewGameState implements GameState
         switch (direction)
         {
             case North:
-                if ((x < 0) || (x > GAME_WIDTH))
+                if ((x < 0) || (x > MAP_WIDTH))
                 {
                     return false;
                 } else {
@@ -304,7 +304,7 @@ public class MapViewGameState implements GameState
                 
                 for (ytemp = y; ytemp > (y-length); ytemp--)
                 {
-                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
+                    if ((ytemp < 0) || (ytemp > MAP_HEIGHT))
                     {
                         return false;
                     }
@@ -323,7 +323,7 @@ public class MapViewGameState implements GameState
                 break;
                 
             case East:
-                if ((y < 0) || (y > GAME_HEIGHT))
+                if ((y < 0) || (y > MAP_HEIGHT))
                 {
                     return false;
                 } else {
@@ -332,7 +332,7 @@ public class MapViewGameState implements GameState
                 
                 for (xtemp = x; xtemp < (x+length); xtemp++)
                 {
-                    if ((xtemp < 0) || (xtemp > GAME_WIDTH))
+                    if ((xtemp < 0) || (xtemp > MAP_WIDTH))
                     {
                         return false;
                     }
@@ -351,7 +351,7 @@ public class MapViewGameState implements GameState
                 break;
                 
             case South:
-                if ((x < 0) || (x > GAME_WIDTH))
+                if ((x < 0) || (x > MAP_WIDTH))
                 {
                     return false;
                 } else {
@@ -360,7 +360,7 @@ public class MapViewGameState implements GameState
                 
                 for (ytemp = y; ytemp < (y+length); ytemp++)
                 {
-                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
+                    if ((ytemp < 0) || (ytemp > MAP_HEIGHT))
                     {
                         return false;
                     }
@@ -379,7 +379,7 @@ public class MapViewGameState implements GameState
                 break;
                 
             case West:
-                if ((y < 0) || (y > GAME_HEIGHT))
+                if ((y < 0) || (y > MAP_HEIGHT))
                 {
                     return false;
                 } else {
@@ -388,7 +388,7 @@ public class MapViewGameState implements GameState
                 
                 for (xtemp = x; xtemp > (x-length); xtemp--)
                 {
-                    if ((xtemp < 0) || (xtemp > GAME_WIDTH))
+                    if ((xtemp < 0) || (xtemp > MAP_WIDTH))
                     {
                         return false;
                     }
@@ -412,9 +412,9 @@ public class MapViewGameState implements GameState
     
     private void calculateFieldOfView()
     {
-        for (int x=0; x<GAME_WIDTH; x++)
+        for (int x=0; x<MAP_WIDTH; x++)
         {
-            for (int y=0; y<GAME_HEIGHT; y++)
+            for (int y=0; y<MAP_HEIGHT; y++)
             {
                 gridLighting[x][y] = false;
             }
@@ -530,7 +530,7 @@ public class MapViewGameState implements GameState
         
         // Render messages
         g.setColor(new Color(53, 63, 62));
-        g.fillRect(0, VIEWPORT_HEIGHT*TILE_HEIGHT, Main.GAME_WIDTH, TILE_HEIGHT*MESSAGE_HEIGHT);
+        g.fillRect(0, VIEWPORT_HEIGHT*TILE_HEIGHT, Main.CANVAS_WIDTH, TILE_HEIGHT*MESSAGE_HEIGHT);
         
         for (int i=0; i<MESSAGE_HEIGHT; i++)
         {
@@ -598,11 +598,11 @@ public class MapViewGameState implements GameState
     {
         if (playerx > (VIEWPORT_WIDTH/2))
         {
-            if (playerx < (GAME_WIDTH - (VIEWPORT_WIDTH/2-1)))
+            if (playerx < (MAP_WIDTH - (VIEWPORT_WIDTH/2-1)))
             {
                 viewportx = playerx - (VIEWPORT_WIDTH/2);
             } else {
-                viewportx = GAME_WIDTH - VIEWPORT_WIDTH;
+                viewportx = MAP_WIDTH - VIEWPORT_WIDTH;
             }
         } else {
             viewportx = 0;
@@ -610,11 +610,11 @@ public class MapViewGameState implements GameState
         
         if (playery > (VIEWPORT_HEIGHT/2))
         {
-            if (playery < (GAME_HEIGHT - (VIEWPORT_HEIGHT/2-1)))
+            if (playery < (MAP_HEIGHT - (VIEWPORT_HEIGHT/2-1)))
             {
                 viewporty = playery - (VIEWPORT_HEIGHT/2);
             } else {
-                viewporty = GAME_HEIGHT - VIEWPORT_HEIGHT;
+                viewporty = MAP_HEIGHT - VIEWPORT_HEIGHT;
             }
         } else {
             viewporty = 0;
@@ -624,9 +624,9 @@ public class MapViewGameState implements GameState
     private boolean isValidPosition(int x, int y)
     {
         if (x < 0) return false;
-        if (x > GAME_WIDTH) return false;
+        if (x > MAP_WIDTH) return false;
         if (y < 0) return false;
-        if (y > GAME_HEIGHT) return false;
+        if (y > MAP_HEIGHT) return false;
         
         return true;
     }
