@@ -16,6 +16,7 @@ public abstract class Mob
     public int x;
     public int y;
     public int health;
+    public boolean hostile;
     
     public Mob(int x, int y)
     {

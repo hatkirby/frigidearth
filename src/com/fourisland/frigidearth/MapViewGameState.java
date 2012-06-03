@@ -5,11 +5,15 @@
 package com.fourisland.frigidearth;
 
 import com.fourisland.frigidearth.mobs.Mouse;
+import com.fourisland.frigidearth.mobs.Rat;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -275,9 +279,14 @@ public class MapViewGameState implements GameState
         rooms.add(room);
         
         // Place mice in random rooms because yolo
-        if (Functions.random(0, 100) < 25)
+        int random = Functions.random(0,100);
+        if (random < 25)
         {
             Mob mob = new Mouse(Functions.random(room.getX()+1, room.getX()+room.getWidth()-2), Functions.random(room.getY()+1, room.getY()+room.getHeight()-2));
+            mobs.add(mob);
+        } else if (random < 50)
+        {
+            Mob mob = new Rat(Functions.random(room.getX()+1, room.getX()+room.getWidth()-2), Functions.random(room.getY()+1, room.getY()+room.getHeight()-2));
             mobs.add(mob);
         }
         
@@ -594,19 +603,37 @@ public class MapViewGameState implements GameState
                 return;
         }
         
-        // Move mobs randomly
+        // Move mobs
         for (Mob mob : mobs)
         {
-            Direction toDir = null;
-            
-            for (int i=0; i<10; i++)
+            // If the mob is hostile, it should move toward the player IF IT CAN SEE the player
+            // Also, if it is adjacent to the player, it should attack
+            if ((mob.hostile) && (canSeePlayer(mob.x, mob.y)))
             {
-                toDir = Direction.getRandomDirection();
-                Point to = toDir.to(mob.getPosition());
-                if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].isBlocked()) && (!to.equals(new Point(playerx, playery))))
+                if (arePointsAdjacent(playerx, playery, mob.x, mob.y))
                 {
-                    mob.moveInDirection(toDir);
-                    break;
+                    // Attack!
+                } else {
+                    List<Direction> path = findPath(mob.getPosition(), new Point(playerx, playery));
+                    
+                    if (path != null)
+                    {
+                        mob.moveInDirection(path.get(0));
+                    }
+                }
+            } else {
+                // If the mob isn't hostile, it should just move around randomly
+                Direction toDir = null;
+
+                for (int i=0; i<10; i++)
+                {
+                    toDir = Direction.getRandomDirection();
+                    Point to = toDir.to(mob.getPosition());
+                    if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].isBlocked()) && (!to.equals(new Point(playerx, playery))))
+                    {
+                        mob.moveInDirection(toDir);
+                        break;
+                    }
                 }
             }
         }
@@ -692,5 +719,175 @@ public class MapViewGameState implements GameState
         }
         
         messages[MESSAGE_HEIGHT-1] = message;
+    }
+    
+    private boolean canSeePlayer(int mx, int my)
+    {
+        int dx = playerx - mx;
+        int dy = playery - my;
+        int ax = Math.abs(dx) << 1;
+        int ay = Math.abs(dy) << 1;
+        int sx = (int) Math.signum(dx);
+        int sy = (int) Math.signum(dy);
+        int x = mx;
+        int y = my;
+        
+        if (ax > ay)
+        {
+            int t = ay - (ax >> 1);
+            
+            do
+            {
+                if (t >= 0)
+                {
+                    y += sy;
+                    t -= ax;
+                }
+                
+                x += sx;
+                t += ay;
+                
+                if ((x == playerx) && (y == playery))
+                {
+                    return true;
+                }
+            } while (!grid[x][y].isBlocked());
+            
+            return false;
+        } else {
+            int t = ax - (ay >> 1);
+            
+            do
+            {
+                if (t >= 0)
+                {
+                    x += sx;
+                    t -= ay;
+                }
+                
+                y += sy;
+                t += ax;
+                
+                if ((x == playerx) && (y == playery))
+                {
+                    return true;
+                }
+            } while (!grid[x][y].isBlocked());
+            
+            return false;
+        }
+    }
+    
+    private boolean arePointsAdjacent(int px, int py, int mx, int my)
+    {
+        if (mx == (px-1))
+        {
+            if (my == (py-1)) return true;
+            if (my == py) return true;
+            if (my == (py+1)) return true;
+        } else if (mx == px)
+        {
+            if (my == (py-1)) return true;
+            if (my == (py+1)) return true;
+        } else if (mx == (px+1))
+        {
+            if (my == (py-1)) return true;
+            if (my == py) return true;
+            if (my == (py+1)) return true;
+        }
+        
+        return false;
+    }
+    
+    private List<Direction> findPath(Point from, Point to)
+    {
+        return findPath(from, to, new ArrayList<Point>());
+    }
+    
+    private List<Direction> findPath(Point from, Point to, List<Point> attempts)
+    {
+        /* Iterate over all of the directions and check if moving in that
+         * direction would result in the destination position. If so, the
+         * correct path has been acquired and thus we can return. */
+        for (Direction d : Direction.values())
+        {
+            Point loc = d.to(from);
+            if (to.equals(loc))
+            {
+                List<Direction> moves = new ArrayList<Direction>();
+                moves.add(d);
+                
+                return moves;
+            }
+        }
+        
+        /* Calculate the directions to attempt and the order in which to do so
+         * based on proximity to the destination */
+        List<Direction> ds = new ArrayList<Direction>();
+        for (Direction d : Direction.values())
+        {
+            Point loc = d.to(from);
+            if ((isValidPosition(loc.x, loc.y)) && (!grid[loc.x][loc.y].isBlocked()))
+            {
+                ds.add(d);
+            }
+        }
+        
+        List<Direction> tempd = new ArrayList<Direction>();
+        
+        if (to.x < from.x)
+        {
+            tempd.add(Direction.West);
+        } else if (to.x > from.x)
+        {
+            tempd.add(Direction.East);
+        } else {
+            if (!ds.contains(Direction.North) || !ds.contains(Direction.South))
+            {
+                tempd.add(Direction.West);
+                tempd.add(Direction.East);
+            }
+        }
+        
+        if (to.y < from.y)
+        {
+            tempd.add(Direction.North);
+        } else if (to.y > from.y)
+        {
+            tempd.add(Direction.South);
+        } else {
+            if (!ds.contains(Direction.West) || !ds.contains(Direction.East))
+            {
+                tempd.add(Direction.North);
+                tempd.add(Direction.South);
+            }
+        }
+        
+        // Remove calculated directions that aren't legal movements
+        tempd.retainAll(ds);
+        
+        // Randomize directions so movement is more fluid
+        Collections.shuffle(tempd);
+        
+        // Iterate over the suggested directions
+        for (Direction d : tempd)
+        {
+            /* If the position in the suggested direction has not already been
+             * covered, recursively search from the new position */
+            Point loc = d.to(from);
+            if (!attempts.contains(loc))
+            {
+                attempts.add(loc);
+                
+                List<Direction> moves = findPath(loc, to, attempts);
+                if (moves != null)
+                {
+                    moves.add(0, d);
+                    return moves;
+                }
+            }
+        }
+        
+        return null;
     }
 }
