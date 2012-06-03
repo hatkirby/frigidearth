@@ -4,8 +4,10 @@
  */
 package com.fourisland.frigidearth;
 
+import com.fourisland.frigidearth.mobs.Mouse;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,7 @@ public class MapViewGameState implements GameState
     private Tile[][] grid;
     private boolean[][] gridLighting;
     private List<Room> rooms = new ArrayList<Room>();
+    private List<Mob> mobs = new ArrayList<Mob>();
     private int playerx = 4;
     private int playery = 4;
     private int viewportx = 0;
@@ -224,6 +227,13 @@ public class MapViewGameState implements GameState
         }
         
         rooms.add(room);
+        
+        // Place mice in random rooms because yolo
+        if (Functions.random(0, 100) < 25)
+        {
+            Mob mob = new Mouse(Functions.random(room.getX()+1, room.getX()+room.getWidth()-2), Functions.random(room.getY()+1, room.getY()+room.getHeight()-2));
+            mobs.add(mob);
+        }
         
         return true;
     }
@@ -460,38 +470,59 @@ public class MapViewGameState implements GameState
             }
         }
         
+        // Render mobs
+        for (Mob mob : mobs)
+        {
+            if ((gridLighting[mob.getX()][mob.getY()]) && (mob.getX() > viewportx) && (mob.getX() < viewportx+VIEWPORT_WIDTH) && (mob.getY() > viewporty) && (mob.getY() < viewporty+VIEWPORT_HEIGHT))
+            {
+                g.drawImage(SystemFont.getCharacter(mob.getDisplayCharacter()), (mob.getX()-viewportx)*TILE_WIDTH, (mob.getY()-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+            }
+        }
+        
         // Render player
         g.drawImage(SystemFont.getCharacter('@'), (playerx-viewportx)*TILE_WIDTH, (playery-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
     }
     
     public void processInput(KeyEvent e)
     {
-        if (e.getKeyCode() == KeyEvent.VK_LEFT)
+        switch (e.getKeyCode())
         {
-            if ((playerx > 0) && (!grid[playerx-1][playery].isBlocked()))
-            {
-                playerx--;
-            }
-        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT)
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_UP:
+            case KeyEvent.VK_DOWN:
+                Direction dir = Direction.fromKeyEvent(e);
+                Point to = dir.to(new Point(playerx, playery));
+                
+                if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].isBlocked()))
+                {
+                    playerx = to.x;
+                    playery = to.y;
+                } else {
+                    return;
+                }
+                
+                break;
+                
+            default:
+                return;
+        }
+        
+        // Move mobs randomly
+        for (Mob mob : mobs)
         {
-            if ((playerx < GAME_WIDTH - 1) && (!grid[playerx+1][playery].isBlocked()))
+            Direction toDir = null;
+            
+            for (int i=0; i<10; i++)
             {
-                playerx++;
+                toDir = Direction.getRandomDirection();
+                Point to = toDir.to(mob.getPosition());
+                if ((isValidPosition(to.x,to.y)) &&(!grid[to.x][to.y].isBlocked()))
+                {
+                    mob.moveInDirection(toDir);
+                    break;
+                }
             }
-        } else if (e.getKeyCode() == KeyEvent.VK_UP)
-        {
-            if ((playery > 0) && (!grid[playerx][playery-1].isBlocked()))
-            {
-                playery--;
-            }
-        } else if (e.getKeyCode() == KeyEvent.VK_DOWN)
-        {
-            if ((playery < GAME_HEIGHT - 1) && (!grid[playerx][playery+1].isBlocked()))
-            {
-                playery++;
-            }
-        } else {
-            return;
         }
         
         adjustViewport();
@@ -523,5 +554,15 @@ public class MapViewGameState implements GameState
         } else {
             viewporty = 0;
         }
+    }
+    
+    private boolean isValidPosition(int x, int y)
+    {
+        if (x < 0) return false;
+        if (x > GAME_WIDTH) return false;
+        if (y < 0) return false;
+        if (y > GAME_HEIGHT) return false;
+        
+        return true;
     }
 }

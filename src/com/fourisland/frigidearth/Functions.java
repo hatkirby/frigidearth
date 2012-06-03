@@ -18,4 +18,16 @@ public class Functions
         
         return r.nextInt(max - min + 1) + min;
     }
+    
+    public static int rollDice(int dice, int sides)
+    {
+        int result = 0;
+        
+        for (int i=0; i<dice; i++)
+        {
+            result += random(1, sides);
+        }
+        
+        return result;
+    }
 }
