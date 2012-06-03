@@ -59,8 +59,6 @@ public class MapViewGameState implements GameState
         }
         
         makeRoom(GAME_WIDTH/2, GAME_HEIGHT/2, Direction.getRandomDirection());
-        playerx = GAME_WIDTH/2;
-        playery = GAME_HEIGHT/2;
         
         int currentFeatures = 1;
         int objects = 300;
@@ -185,12 +183,17 @@ public class MapViewGameState implements GameState
                     if (ways == 0)
                     {
                         grid[newx][newy] = Tile.DownStairs;
+                        playerx=newx+1;
+                        playery=newy;
                         state = 10;
                         break;
                     }
                 }
             }
         }
+        
+        adjustViewport();
+        calculateFieldOfView();
     }
     
     private boolean makeRoom(int x, int y, Direction direction)
