@@ -4,11 +4,8 @@
  */
 package com.fourisland.frigidearth;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
-import java.util.Random;
 
 /**
  *
@@ -22,10 +19,13 @@ public class MapViewGameState implements GameState
     private final int GAME_HEIGHT = 100;
     private final int VIEWPORT_WIDTH = Main.GAME_WIDTH / TILE_WIDTH;
     private final int VIEWPORT_HEIGHT = Main.GAME_HEIGHT / TILE_HEIGHT;
-    private final int ROOM_MAX_SIZE = 10;
-    private final int ROOM_MIN_SIZE = 6;
-    private final int MAX_ROOMS = 30;
-    private boolean[][] grid;
+    private final int MAX_ROOM_WIDTH = 13;
+    private final int MIN_ROOM_WIDTH = 7;
+    private final int MAX_ROOM_HEIGHT = 13;
+    private final int MIN_ROOM_HEIGHT = 7;
+    private final int MAX_CORRIDOR_LENGTH = 6;
+    private final int MIN_CORRIDOR_LENGTH = 2;
+    private Tile[][] grid;
     private int playerx = 4;
     private int playery = 4;
     private int viewportx = 0;
@@ -33,109 +33,447 @@ public class MapViewGameState implements GameState
     
     public MapViewGameState()
     {
-        grid = new boolean[GAME_WIDTH][GAME_HEIGHT];
+        grid = new Tile[GAME_WIDTH][GAME_HEIGHT];
         
         for (int x=0; x<GAME_WIDTH; x++)
         {
             for (int y=0; y<GAME_HEIGHT; y++)
             {
-                grid[x][y] = true;
+                if ((x == 0) || (x == GAME_WIDTH-1) || (y == 0) || (y == GAME_HEIGHT-1))
+                {
+                    grid[x][y] = Tile.StoneWall;
+                } else {
+                    grid[x][y] = Tile.Unused;
+                }
             }
         }
         
-        Rectangle[] rooms = new Rectangle[MAX_ROOMS];
-        int numRooms = 0;
-        Random r = new Random();
+        makeRoom(GAME_WIDTH/2, GAME_HEIGHT/2, Functions.random(0, 3));
+        playerx = GAME_WIDTH/2;
+        playery = GAME_HEIGHT/2;
         
-        for (int i=0; i<MAX_ROOMS; i++)
+        int currentFeatures = 1;
+        int objects = 300;
+        
+        for (int countingTries = 0; countingTries < 1000; countingTries++)
         {
-            int w = r.nextInt(ROOM_MAX_SIZE - ROOM_MIN_SIZE + 1) + ROOM_MIN_SIZE;
-            int h = r.nextInt(ROOM_MAX_SIZE - ROOM_MIN_SIZE + 1) + ROOM_MIN_SIZE;
-            int x = r.nextInt(GAME_WIDTH - w - 1);
-            int y = r.nextInt(GAME_HEIGHT - h - 1);
-            Rectangle newRoom = new Rectangle(x, y, w, h);
-            boolean failed = false;
-            
-            for (Rectangle room : rooms)
+            if (currentFeatures == objects)
             {
-               if ((room != null) && (newRoom.intersects(room)))
-               {
-                   failed = true;
-                   break;
-               }
+                break;
             }
             
-            if (!failed)
+            int newx = 0;
+            int xmod = 0;
+            int newy = 0;
+            int ymod = 0;
+            int validTile = -1;
+            for (int testing = 0; testing < 1000; testing++)
             {
-                createRoom(newRoom);
+                newx = Functions.random(1, GAME_WIDTH-1);
+                newy = Functions.random(1, GAME_HEIGHT-1);
+                validTile = -1;
                 
-                int newX = (int) newRoom.getCenterX();
-                int newY = (int) newRoom.getCenterY();
-                
-                if (numRooms == 0)
+                if ((grid[newx][newy] == Tile.DirtWall) || (grid[newx][newy] == Tile.Corridor))
                 {
-                    playerx = newX;
-                    playery = newY;
-                    
-                    adjustViewport();
-                } else {
-                    int prevX = (int) rooms[numRooms-1].getCenterX();
-                    int prevY = (int) rooms[numRooms-1].getCenterY();
-                    
-                    if (r.nextBoolean())
+                    if ((grid[newx][newy+1] == Tile.DirtFloor) || (grid[newx][newy+1] == Tile.Corridor))
                     {
-                        createHTunnel(prevX, newX, prevY);
-                        createVTunnel(prevY, newY, newX);
-                    } else {
-                        createVTunnel(prevY, newY, prevX);
-                        createHTunnel(prevX, newX, newY);
+                        validTile = 0;
+                        xmod = 0;
+                        ymod = -1;
+                    } else if ((grid[newx-1][newy] == Tile.DirtFloor) || (grid[newx-1][newy] == Tile.Corridor))
+                    {
+                        validTile = 1;
+                        xmod = 1;
+                        ymod = 0;
+                    } else if ((grid[newx][newy-1] == Tile.DirtFloor) || (grid[newx][newy-1] == Tile.Corridor))
+                    {
+                        validTile = 2;
+                        xmod = 0;
+                        ymod = 1;
+                    } else if ((grid[newx+1][newy] == Tile.DirtFloor) || (grid[newx+1][newy] == Tile.Corridor))
+                    {
+                        validTile = 3;
+                        xmod = -1;
+                        ymod = 0;
+                    }
+                    
+                    if (validTile > -1)
+                    {
+                        if (grid[newx][newy+1] == Tile.Door)
+                        {
+                            validTile = -1;
+                        } else if (grid[newx-1][newy] == Tile.Door)
+                        {
+                            validTile = -1;
+                        } else if (grid[newx][newy-1] == Tile.Door)
+                        {
+                            validTile = -1;
+                        } else if (grid[newx+1][newy] == Tile.Door)
+                        {
+                            validTile = -1;
+                        }
+                    }
+                    
+                    if (validTile > -1)
+                    {
+                        break;
+                    }
+                }
+            }
+            
+            if (validTile > -1)
+            {
+                if (Functions.random(0, 100) <= 75)
+                {
+                    if (makeRoom(newx+xmod, newy+ymod, validTile))
+                    {
+                        currentFeatures++;
+                        grid[newx][newy] = Tile.Door;
+                        grid[newx+xmod][newy+ymod] = Tile.DirtFloor;
+                    }
+                } else {
+                    if (makeCorridor(newx+xmod, newy+ymod, validTile))
+                    {
+                        currentFeatures++;
+                        grid[newx][newy] = Tile.Door;
+                    }
+                }
+            }
+        }
+    }
+    
+    private boolean makeRoom(int x, int y, int direction)
+    {
+        int width = Functions.random(MIN_ROOM_WIDTH, MAX_ROOM_WIDTH);
+        int height = Functions.random(MIN_ROOM_HEIGHT, MAX_ROOM_HEIGHT);
+        Tile floor = Tile.DirtFloor;
+        Tile wall = Tile.DirtWall;
+        int dir = 0;
+        
+        if ((direction > 0) && (direction < 4))
+        {
+            dir = direction;
+        }
+        
+        switch (dir)
+        {
+            case 0: // North
+                for (int ytemp=y; ytemp > (y-height); ytemp--)
+                {
+                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
+                    {
+                        return false;
+                    }
+                    
+                    for (int xtemp=(x-width/2); xtemp < (x+(width+1)/2); xtemp++)
+                    {
+                        if ((xtemp < 0) || (xtemp > GAME_WIDTH))
+                        {
+                            return false;
+                        }
+
+                        if (grid[xtemp][ytemp] != Tile.Unused)
+                        {
+                            return false;
+                        }
                     }
                 }
                 
-                rooms[numRooms++] = newRoom;
-            }
-        }
-    }
-    
-    private void createRoom(Rectangle room)
-    {
-        for (int x=room.x+1; x<room.x+room.width; x++)
-        {
-            for (int y=room.y+1; y<room.y+room.height; y++)
-            {
-                grid[x][y] = false;
-            }
-        }
-    }
-    
-    private void createHTunnel(int x1, int x2, int y)
-    {
-        if (x2 < x1)
-        {
-            int temp = x1;
-            x1 = x2;
-            x2 = temp;
+                for (int ytemp = y; ytemp > (y-height); ytemp--)
+                {
+                    for (int xtemp = (x-width/2); xtemp < (x+(width+1)/2); xtemp++)
+                    {
+                        if (xtemp == (x-width/2))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (xtemp == (x+(width-1)/2))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (ytemp == y)
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (ytemp == (y-height+1))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else {
+                            grid[xtemp][ytemp] = floor;
+                        }
+                    }
+                }
+                
+                break;
+                
+            case 1: // East
+                for (int ytemp=(y-height/2); ytemp < (y+(height+1)/2); ytemp++)
+                {
+                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
+                    {
+                        return false;
+                    }
+                    
+                    for (int xtemp=x; xtemp < (x+width); xtemp++)
+                    {
+                        if ((xtemp < 0) || (xtemp > GAME_WIDTH))
+                        {
+                            return false;
+                        }
+
+                        if (grid[xtemp][ytemp] != Tile.Unused)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                
+                for (int ytemp=(y-height/2); ytemp < (y+(height+1)/2); ytemp++)
+                {
+                    for (int xtemp=x; xtemp < (x+width); xtemp++)
+                    {
+                        if (xtemp == x)
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (xtemp == (x+width-1))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (ytemp == (y-height/2))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (ytemp == (y+(height-1)/2))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else {
+                            grid[xtemp][ytemp] = floor;
+                        }
+                    }
+                }
+                
+                break;
+                
+            case 2: // South
+                for (int ytemp=y; ytemp < (y+height); ytemp++)
+                {
+                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
+                    {
+                        return false;
+                    }
+                    
+                    for (int xtemp=(x-width/2); xtemp < (x+(width+1)/2); xtemp++)
+                    {
+                        if ((xtemp < 0) || (xtemp > GAME_WIDTH))
+                        {
+                            return false;
+                        }
+
+                        if (grid[xtemp][ytemp] != Tile.Unused)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                
+                for (int ytemp=y; ytemp < (y+height); ytemp++)
+                {
+                    for (int xtemp = (x-width/2); xtemp < (x+(width+1)/2); xtemp++)
+                    {
+                        if (xtemp == (x-width/2))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (xtemp == (x+(width-1)/2))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (ytemp == y)
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (ytemp == (y+height-1))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else {
+                            grid[xtemp][ytemp] = floor;
+                        }
+                    }
+                }
+                
+                break;
+                
+            case 3: // West
+                for (int ytemp=(y-height/2); ytemp < (y+(height+1)/2); ytemp++)
+                {
+                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
+                    {
+                        return false;
+                    }
+                    
+                    for (int xtemp=x; xtemp > (x-width); xtemp--)
+                    {
+                        if ((xtemp < 0) || (xtemp > GAME_WIDTH))
+                        {
+                            return false;
+                        }
+
+                        if (grid[xtemp][ytemp] != Tile.Unused)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                
+                for (int ytemp=(y-height/2); ytemp < (y+(height+1)/2); ytemp++)
+                {
+                    for (int xtemp=x; xtemp > (x-width); xtemp--)
+                    {
+                        if (xtemp == x)
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (xtemp == (x-width+1))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (ytemp == (y-height/2))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else if (ytemp == (y+(height-1)/2))
+                        {
+                            grid[xtemp][ytemp] = wall;
+                        } else {
+                            grid[xtemp][ytemp] = floor;
+                        }
+                    }
+                }
+                
+                break;
         }
         
-        for (int x=x1; x<x2+1; x++)
-        {
-            grid[x][y] = false;
-        }
+        return true;
     }
     
-    private void createVTunnel(int y1, int y2, int x)
+    private boolean makeCorridor(int x, int y, int direction)
     {
-        if (y2 < y1)
+        int length = Functions.random(MIN_CORRIDOR_LENGTH, MAX_CORRIDOR_LENGTH);
+        Tile floor = Tile.Corridor;
+        int dir = 0;
+        if ((direction > 0) && (direction < 4))
         {
-            int temp = y1;
-            y1 = y2;
-            y2 = temp;
+            dir = direction;
         }
         
-        for (int y=y1; y<y2+1; y++)
+        int xtemp = 0;
+        int ytemp = 0;
+        
+        switch (dir)
         {
-            grid[x][y] = false;
+            case 0: // North
+                if ((x < 0) || (x > GAME_WIDTH))
+                {
+                    return false;
+                } else {
+                    xtemp = x;
+                }
+                
+                for (ytemp = y; ytemp > (y-length); ytemp--)
+                {
+                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
+                    {
+                        return false;
+                    }
+                    
+                    if (grid[xtemp][ytemp] != Tile.Unused)
+                    {
+                        return false;
+                    }
+                }
+                
+                for (ytemp = y; ytemp > (y-length); ytemp--)
+                {
+                    grid[xtemp][ytemp] = floor;
+                }
+                
+                break;
+                
+            case 1: // East
+                if ((y < 0) || (y > GAME_HEIGHT))
+                {
+                    return false;
+                } else {
+                    ytemp = y;
+                }
+                
+                for (xtemp = x; xtemp < (x+length); xtemp++)
+                {
+                    if ((xtemp < 0) || (xtemp > GAME_WIDTH))
+                    {
+                        return false;
+                    }
+                    
+                    if (grid[xtemp][ytemp] != Tile.Unused)
+                    {
+                        return false;
+                    }
+                }
+                
+                for (xtemp = x; xtemp < (x+length); xtemp++)
+                {
+                    grid[xtemp][ytemp] = floor;
+                }
+                
+                break;
+                
+            case 2: // South
+                if ((x < 0) || (x > GAME_WIDTH))
+                {
+                    return false;
+                } else {
+                    xtemp = x;
+                }
+                
+                for (ytemp = y; ytemp < (y+length); ytemp++)
+                {
+                    if ((ytemp < 0) || (ytemp > GAME_HEIGHT))
+                    {
+                        return false;
+                    }
+                    
+                    if (grid[xtemp][ytemp] != Tile.Unused)
+                    {
+                        return false;
+                    }
+                }
+                
+                for (ytemp = y; ytemp < (y+length); ytemp++)
+                {
+                    grid[xtemp][ytemp] = floor;
+                }
+                
+                break;
+                
+            case 3: // West
+                if ((y < 0) || (y > GAME_HEIGHT))
+                {
+                    return false;
+                } else {
+                    ytemp = y;
+                }
+                
+                for (xtemp = x; xtemp > (x-length); xtemp--)
+                {
+                    if ((xtemp < 0) || (xtemp > GAME_WIDTH))
+                    {
+                        return false;
+                    }
+                    
+                    if (grid[xtemp][ytemp] != Tile.Unused)
+                    {
+                        return false;
+                    }
+                }
+                
+                for (xtemp = x; xtemp > (x-length); xtemp--)
+                {
+                    grid[xtemp][ytemp] = floor;
+                }
+                
+                break;
         }
+        
+        return true;
     }
 
     public void render(Graphics2D g)
@@ -145,14 +483,7 @@ public class MapViewGameState implements GameState
         {
             for (int y=viewporty; y<viewporty+VIEWPORT_HEIGHT; y++)
             {
-                if (grid[x][y])
-                {
-                    g.setColor(Color.GRAY);
-                } else {
-                    g.setColor(Color.BLACK);
-                }
-                
-                g.fillRect((x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT);
+                g.drawImage(SystemFont.getCharacter(grid[x][y].getDisplayCharacter()), (x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
             }
         }
         
@@ -164,25 +495,25 @@ public class MapViewGameState implements GameState
     {
         if (e.getKeyCode() == KeyEvent.VK_LEFT)
         {
-            if ((playerx > 0) && (!grid[playerx-1][playery]))
+            if ((playerx > 0) && (!grid[playerx-1][playery].isBlocked()))
             {
                 playerx--;
             }
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT)
         {
-            if ((playerx < GAME_WIDTH - 1) && (!grid[playerx+1][playery]))
+            if ((playerx < GAME_WIDTH - 1) && (!grid[playerx+1][playery].isBlocked()))
             {
                 playerx++;
             }
         } else if (e.getKeyCode() == KeyEvent.VK_UP)
         {
-            if ((playery > 0) && (!grid[playerx][playery-1]))
+            if ((playery > 0) && (!grid[playerx][playery-1].isBlocked()))
             {
                 playery--;
             }
         } else if (e.getKeyCode() == KeyEvent.VK_DOWN)
         {
-            if ((playery < GAME_HEIGHT - 1) && (!grid[playerx][playery+1]))
+            if ((playery < GAME_HEIGHT - 1) && (!grid[playerx][playery+1].isBlocked()))
             {
                 playery++;
             }
