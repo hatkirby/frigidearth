@@ -44,6 +44,8 @@ public class MapViewGameState implements GameState
     private int viewportx = 0;
     private int viewporty = 0;
     private int health = 15;
+    private int maxHealth = 15;
+    private int defense = 0;
     
     public MapViewGameState()
     {
@@ -555,10 +557,30 @@ public class MapViewGameState implements GameState
         // Render status bar
         g.drawImage(SystemFont.getCharacter((char) 3, Color.RED), TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         String healthText = Integer.toString(health);
+        double healthPercentage = ((double) health) / ((double) maxHealth);
+        Color healthColor = Color.WHITE;
+        if (healthPercentage < 0.2)
+        {
+            healthColor = Color.RED;
+        } else if (healthPercentage < 0.55)
+        {
+            healthColor = Color.YELLOW;
+        } else if (healthPercentage < 1)
+        {
+            healthColor = Color.GREEN;
+        }
         
         for (int i=0; i<healthText.length(); i++)
         {
-            g.drawImage(SystemFont.getCharacter(healthText.charAt(i), Color.WHITE), (i+2)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+            g.drawImage(SystemFont.getCharacter(healthText.charAt(i), healthColor), (i+2)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        }
+        
+        g.drawImage(SystemFont.getCharacter((char) 5, Color.GRAY), (healthText.length()+3)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        int b = healthText.length()+4;
+        String defenseText = Integer.toBinaryString(defense);
+        for (int i=0; i<defenseText.length(); i++)
+        {
+            g.drawImage(SystemFont.getCharacter(defenseText.charAt(i), Color.WHITE), (i+b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         }
     }
     
@@ -622,6 +644,8 @@ public class MapViewGameState implements GameState
                 if (arePointsAdjacent(playerx, playery, mob.x, mob.y))
                 {
                     // Attack!
+                    health -= (mob.power - defense);
+                    printMessage(mob.getBattleMessage());
                 } else {
                     List<Direction> path = findPath(mob.getPosition(), new Point(playerx, playery));
                     

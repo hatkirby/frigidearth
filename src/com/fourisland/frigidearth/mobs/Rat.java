@@ -20,6 +20,7 @@ public class Rat extends Mob
         
         health = Functions.rollDice(1, 4);
         hostile = true;
+        power = 1;
     }
 
     public char getDisplayCharacter()
@@ -35,6 +36,11 @@ public class Rat extends Mob
     public String getName()
     {
         return "Rat";
+    }
+    
+    public String getBattleMessage()
+    {
+        return "The rat bites you";
     }
     
 }

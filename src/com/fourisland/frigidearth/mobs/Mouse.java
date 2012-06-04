@@ -35,4 +35,9 @@ public class Mouse extends Mob
     {
         return "Mouse";
     }
+    
+    public String getBattleMessage()
+    {
+        return "The mouse bites you";
+    }
 }
