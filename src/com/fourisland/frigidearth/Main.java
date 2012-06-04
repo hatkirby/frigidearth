@@ -28,7 +28,7 @@ import javax.swing.JFrame;
  */
 public class Main extends Canvas
 {
-    public static final int CANVAS_WIDTH = 636;
+    public static final int CANVAS_WIDTH = 624;
     public static final int CANVAS_HEIGHT = 480;
     
     private static JFrame mainWindow;

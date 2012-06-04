@@ -11,9 +11,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.List;
 
 /**
@@ -26,7 +24,7 @@ public class MapViewGameState implements GameState
     private final int TILE_HEIGHT = 12;
     private final int MAP_WIDTH = 100;
     private final int MAP_HEIGHT = 100;
-    private final int MESSAGE_HEIGHT = 5;
+    private final int MESSAGE_HEIGHT = 6;
     private final int VIEWPORT_WIDTH = Main.CANVAS_WIDTH / TILE_WIDTH;
     private final int VIEWPORT_HEIGHT = Main.CANVAS_HEIGHT / TILE_HEIGHT - MESSAGE_HEIGHT;
     private final int MAX_ROOM_WIDTH = 13;
@@ -170,7 +168,8 @@ public class MapViewGameState implements GameState
                 for (Direction dir : Direction.values())
                 {
                     Point to = dir.to(new Point(newx, newy));
-                    if ((grid[to.x][to.y] == Tile.DirtFloor) || (grid[to.x][to.y] == Tile.Corridor))
+                    
+                    if ((isValidPosition(newx, newy)) && (grid[to.x][to.y] == Tile.DirtFloor) || (grid[to.x][to.y] == Tile.Corridor))
                     {
                         ways--;
                     }
