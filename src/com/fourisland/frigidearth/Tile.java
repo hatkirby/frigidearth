@@ -152,6 +152,12 @@ public enum Tile
         {
             return new Color(255, 250, 250);
         }
+    },
+    SnowTemp {
+        public boolean isBlocked()
+        {
+            return false;
+        }
     };
     
     public abstract boolean isBlocked();

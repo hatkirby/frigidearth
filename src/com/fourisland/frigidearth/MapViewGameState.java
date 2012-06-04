@@ -47,6 +47,11 @@ public class MapViewGameState implements GameState
     private int health = 15;
     private int maxHealth = 15;
     private int defense = 0;
+    private int keyx;
+    private int keyy;
+    private boolean haveKey = false;
+    private boolean snowGrow = false;
+    private int heartbeat = 0;
     
     public MapViewGameState()
     {
@@ -311,23 +316,33 @@ public class MapViewGameState implements GameState
             case North:
                 grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()] = Tile.Door;
                 grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()-1] = Tile.DirtFloor;
+                keyx = room.getX()+3;
+                keyy = room.getY()+3;
                 break;
                 
             case East:
                 grid[room.getX()-1][room.getY()+room.getHeight()/2] = Tile.Door;
                 grid[room.getX()][room.getY()+room.getHeight()/2] = Tile.DirtFloor;
+                keyx = room.getX()+10;
+                keyy = room.getY()+3;
                 break;
                 
             case South:
                 grid[room.getX()+room.getWidth()/2][room.getY()-1] = Tile.Door;
                 grid[room.getX()+room.getWidth()/2][room.getY()] = Tile.DirtFloor;
+                keyx = room.getX()+3;
+                keyy = room.getY()+10;
                 break;
                 
             case West:
                 grid[room.getX()+room.getWidth()][room.getY()+room.getHeight()/2] = Tile.Door;
                 grid[room.getX()+room.getWidth()-1][room.getY()+room.getHeight()/2] = Tile.DirtFloor;
+                keyx = room.getX()+3;
+                keyy = room.getY()+3;
                 break;
         }
+        
+        rooms.add(room);
         
         adjustViewport();
         calculateFieldOfView();
@@ -673,6 +688,12 @@ public class MapViewGameState implements GameState
             }
         }
         
+        // Render key
+        if ((!haveKey) && (gridLighting[keyx][keyy]))
+        {
+            g.drawImage(SystemFont.getCharacter('k', Color.YELLOW), (keyx-viewportx)*TILE_WIDTH, (keyy-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+        }
+        
         // Render player
         g.drawImage(SystemFont.getCharacter('@', Color.WHITE), (playerx-viewportx)*TILE_WIDTH, (playery-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
         
@@ -767,6 +788,27 @@ public class MapViewGameState implements GameState
                 
                 break;
                 
+            case KeyEvent.VK_G:
+                if ((playerx == keyx) && (playery == keyy) && (!haveKey))
+                {
+                    haveKey = true;
+                    printMessage("You get the key");
+                    printMessage("All the windows in the room shatter!");
+                    
+                    for (int x=0; x<MAP_WIDTH; x++)
+                    {
+                        for (int y=0; y<MAP_HEIGHT; y++)
+                        {
+                            if (grid[x][y] == Tile.Window)
+                            {
+                                grid[x][y] = Tile.ShatteredWindow;
+                            }
+                        }
+                    }
+                }
+                
+                break;
+                
             default:
                 return;
         }
@@ -807,6 +849,68 @@ public class MapViewGameState implements GameState
                 }
             }
         }
+        
+        // Move snow
+        if (snowGrow)
+        {
+            for (int x=0; x<MAP_WIDTH; x++)
+            {
+                for (int y=0; y<MAP_HEIGHT; y++)
+                {
+                    if (grid[x][y] == Tile.Snow)
+                    {
+                        for (Direction d : Direction.values())
+                        {
+                            Point to = d.to(new Point(x, y));
+                            if ((!grid[to.x][to.y].isBlocked()) && (grid[to.x][to.y] != Tile.Snow) && (grid[to.x][to.y] != Tile.UpStairs))
+                            {
+                                grid[to.x][to.y] = Tile.SnowTemp;
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (int x=0; x<MAP_WIDTH; x++)
+            {
+                for (int y=0; y<MAP_HEIGHT; y++)
+                {
+                    if (grid[x][y] == Tile.ShatteredWindow)
+                    {
+                        for (Direction d : Direction.values())
+                        {
+                            Point to = d.to(new Point(x, y));
+                            if ((!grid[to.x][to.y].isBlocked()) && (grid[to.x][to.y] != Tile.Snow))
+                            {
+                                grid[to.x][to.y] = Tile.Snow;
+                            }
+                        }
+                    } else if (grid[x][y] == Tile.SnowTemp)
+                    {
+                        grid[x][y] = Tile.Snow;
+                    }
+                }
+            }
+        }
+        
+        snowGrow = !snowGrow;
+        
+        // Heartbeat
+        if (heartbeat % 2 == 0)
+        {
+            if (grid[playerx][playery] == Tile.Snow)
+            {
+                health--;
+            } else if (heartbeat == Functions.random(0, 3)) {
+                if (health < maxHealth)
+                {
+                    health++;
+                }
+            }
+        }
+        
+        heartbeat++;
+        if (heartbeat == 4) heartbeat = 0;
         
         adjustViewport();
         calculateFieldOfView();
