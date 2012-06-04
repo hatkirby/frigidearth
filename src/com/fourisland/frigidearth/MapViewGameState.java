@@ -899,8 +899,21 @@ public class MapViewGameState implements GameState
                     Point to = toDir.to(mob.getPosition());
                     if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].isBlocked()) && (!to.equals(new Point(playerx, playery))))
                     {
-                        mob.moveInDirection(toDir);
-                        break;
+                        boolean found = false;
+                        for (Mob m : mobs)
+                        {
+                            if (m.getPosition().equals(to))
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!found)
+                        {
+                            mob.moveInDirection(toDir);
+                            break;
+                        }
                     }
                 }
             }
