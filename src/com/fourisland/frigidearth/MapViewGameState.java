@@ -24,8 +24,6 @@ public class MapViewGameState implements GameState
 {
     private final int TILE_WIDTH = 12;
     private final int TILE_HEIGHT = 12;
-    private final int MAP_WIDTH = 100;
-    private final int MAP_HEIGHT = 100;
     private final int MESSAGE_HEIGHT = 6;
     private final int VIEWPORT_WIDTH = Main.CANVAS_WIDTH / TILE_WIDTH;
     private final int VIEWPORT_HEIGHT = Main.CANVAS_HEIGHT / TILE_HEIGHT - MESSAGE_HEIGHT;
@@ -36,6 +34,8 @@ public class MapViewGameState implements GameState
     private final int MAX_CORRIDOR_LENGTH = 6;
     private final int MIN_CORRIDOR_LENGTH = 2;
     private final int[][] OCTET_MULTIPLIERS = new int[][] {new int[] {1,0,0,-1,-1,0,0,1}, new int[] {0,1,-1,0,0,-1,1,0}, new int[] {0,1,1,0,0,-1,-1,0}, new int[] {1,0,0,1,-1,0,0,-1}};
+    private int mapWidth = 60;
+    private int mapHeight = 60;
     private Tile[][] grid;
     private boolean[][] gridLighting;
     private String[] messages = new String[MESSAGE_HEIGHT];
@@ -45,9 +45,6 @@ public class MapViewGameState implements GameState
     private int playery = 4;
     private int viewportx = 0;
     private int viewporty = 0;
-    private int health = 15;
-    private int maxHealth = 15;
-    private int defense = 0;
     private int keyx;
     private int keyy;
     private boolean haveKey = false;
@@ -55,21 +52,22 @@ public class MapViewGameState implements GameState
     private int heartbeat = 0;
     private int floor;
     private int spawnTimer = 0;
-    private int level = 1;
-    private int experience = 0;
     
     public MapViewGameState(int floor)
     {
         this.floor = floor;
         
-        grid = new Tile[MAP_WIDTH][MAP_HEIGHT];
-        gridLighting = new boolean[MAP_WIDTH][MAP_HEIGHT];
+        mapWidth += (50 * floor);
+        mapHeight += (50 * floor);
         
-        for (int x=0; x<MAP_WIDTH; x++)
+        grid = new Tile[mapWidth][mapHeight];
+        gridLighting = new boolean[mapWidth][mapHeight];
+        
+        for (int x=0; x<mapWidth; x++)
         {
-            for (int y=0; y<MAP_HEIGHT; y++)
+            for (int y=0; y<mapHeight; y++)
             {
-                if ((x == 0) || (x == MAP_WIDTH-1) || (y == 0) || (y == MAP_HEIGHT-1))
+                if ((x == 0) || (x == mapWidth-1) || (y == 0) || (y == mapHeight-1))
                 {
                     grid[x][y] = Tile.StoneWall;
                 } else {
@@ -83,23 +81,23 @@ public class MapViewGameState implements GameState
         switch (keyRoomDirection)
         {
             case North:
-                legalBounds = new Rectangle(0, 14, MAP_WIDTH, MAP_HEIGHT-14);
+                legalBounds = new Rectangle(0, 14, mapWidth, mapHeight-14);
                 break;
                 
             case East:
-                legalBounds = new Rectangle(0, 0, MAP_WIDTH-14, MAP_HEIGHT);
+                legalBounds = new Rectangle(0, 0, mapWidth-14, mapHeight);
                 break;
                 
             case South:
-                legalBounds = new Rectangle(0, 0, MAP_WIDTH, MAP_HEIGHT-14);
+                legalBounds = new Rectangle(0, 0, mapWidth, mapHeight-14);
                 break;
                 
             case West:
-                legalBounds = new Rectangle(14, 0, MAP_WIDTH-14, MAP_HEIGHT);
+                legalBounds = new Rectangle(14, 0, mapWidth-14, mapHeight);
                 break;
         }
         
-        makeRoom(MAP_WIDTH/2, MAP_HEIGHT/2, Direction.getRandomDirection(), legalBounds);
+        makeRoom(mapWidth/2, mapHeight/2, Direction.getRandomDirection(), legalBounds);
         
         int currentFeatures = 1;
         int objects = 300;
@@ -118,8 +116,8 @@ public class MapViewGameState implements GameState
             Direction validTile = null;
             for (int testing = 0; testing < 1000; testing++)
             {
-                newx = Functions.random(1, MAP_WIDTH-1);
-                newy = Functions.random(1, MAP_HEIGHT-1);
+                newx = Functions.random(1, mapWidth-1);
+                newy = Functions.random(1, mapHeight-1);
                 validTile = null;
                 
                 if ((grid[newx][newy] == Tile.DirtWall) || (grid[newx][newy] == Tile.Corridor))
@@ -198,8 +196,8 @@ public class MapViewGameState implements GameState
         {
             for (int testing = 0; testing < 1000; testing++)
             {
-                newx = Functions.random(1, MAP_WIDTH-1);
-                newy = Functions.random(1, MAP_HEIGHT-2);
+                newx = Functions.random(1, mapWidth-1);
+                newy = Functions.random(1, mapHeight-2);
                 ways = 4;
                 
                 for (Direction dir : Direction.values())
@@ -364,7 +362,7 @@ public class MapViewGameState implements GameState
         
         if (legalBounds == null)
         {
-            bounds = new Rectangle(0, 0, MAP_WIDTH, MAP_HEIGHT);
+            bounds = new Rectangle(0, 0, mapWidth, mapHeight);
         } else {
             bounds = legalBounds;
         }
@@ -463,7 +461,7 @@ public class MapViewGameState implements GameState
         switch (direction)
         {
             case North:
-                if ((x < 0) || (x > MAP_WIDTH))
+                if ((x < 0) || (x > mapWidth))
                 {
                     return false;
                 } else {
@@ -472,7 +470,7 @@ public class MapViewGameState implements GameState
                 
                 for (ytemp = y; ytemp > (y-length); ytemp--)
                 {
-                    if ((ytemp < 0) || (ytemp > MAP_HEIGHT))
+                    if ((ytemp < 0) || (ytemp > mapHeight))
                     {
                         return false;
                     }
@@ -491,7 +489,7 @@ public class MapViewGameState implements GameState
                 break;
                 
             case East:
-                if ((y < 0) || (y > MAP_HEIGHT))
+                if ((y < 0) || (y > mapHeight))
                 {
                     return false;
                 } else {
@@ -500,7 +498,7 @@ public class MapViewGameState implements GameState
                 
                 for (xtemp = x; xtemp < (x+length); xtemp++)
                 {
-                    if ((xtemp < 0) || (xtemp > MAP_WIDTH))
+                    if ((xtemp < 0) || (xtemp > mapWidth))
                     {
                         return false;
                     }
@@ -519,7 +517,7 @@ public class MapViewGameState implements GameState
                 break;
                 
             case South:
-                if ((x < 0) || (x > MAP_WIDTH))
+                if ((x < 0) || (x > mapWidth))
                 {
                     return false;
                 } else {
@@ -528,7 +526,7 @@ public class MapViewGameState implements GameState
                 
                 for (ytemp = y; ytemp < (y+length); ytemp++)
                 {
-                    if ((ytemp < 0) || (ytemp > MAP_HEIGHT))
+                    if ((ytemp < 0) || (ytemp > mapHeight))
                     {
                         return false;
                     }
@@ -547,7 +545,7 @@ public class MapViewGameState implements GameState
                 break;
                 
             case West:
-                if ((y < 0) || (y > MAP_HEIGHT))
+                if ((y < 0) || (y > mapHeight))
                 {
                     return false;
                 } else {
@@ -556,7 +554,7 @@ public class MapViewGameState implements GameState
                 
                 for (xtemp = x; xtemp > (x-length); xtemp--)
                 {
-                    if ((xtemp < 0) || (xtemp > MAP_WIDTH))
+                    if ((xtemp < 0) || (xtemp > mapWidth))
                     {
                         return false;
                     }
@@ -580,9 +578,9 @@ public class MapViewGameState implements GameState
     
     private void calculateFieldOfView()
     {
-        for (int x=0; x<MAP_WIDTH; x++)
+        for (int x=0; x<mapWidth; x++)
         {
-            for (int y=0; y<MAP_HEIGHT; y++)
+            for (int y=0; y<mapHeight; y++)
             {
                 gridLighting[x][y] = false;
             }
@@ -719,8 +717,8 @@ public class MapViewGameState implements GameState
         
         // Render status bar
         g.drawImage(SystemFont.getCharacter((char) 3, Color.RED), TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
-        String healthText = Integer.toString(health);
-        double healthPercentage = ((double) health) / ((double) maxHealth);
+        String healthText = Integer.toString(Main.currentGame.health);
+        double healthPercentage = ((double) Main.currentGame.health) / ((double) Main.currentGame.maxHealth);
         Color healthColor = Color.WHITE;
         if (healthPercentage < 0.2)
         {
@@ -740,7 +738,7 @@ public class MapViewGameState implements GameState
         
         g.drawImage(SystemFont.getCharacter((char) 5, Color.GRAY), (healthText.length()+3)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         int b = healthText.length()+4;
-        String defenseText = Integer.toString(defense);
+        String defenseText = Integer.toString(Main.currentGame.defense);
         for (int i=0; i<defenseText.length(); i++)
         {
             g.drawImage(SystemFont.getCharacter(defenseText.charAt(i), Color.WHITE), (i+b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
@@ -751,7 +749,7 @@ public class MapViewGameState implements GameState
         g.drawImage(SystemFont.getCharacter('X', Color.WHITE), (b+1)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         g.drawImage(SystemFont.getCharacter('P', Color.WHITE), (b+2)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         b+=3;
-        String expText = Functions.padLeft(Integer.toString(experience), 3, '0');
+        String expText = Functions.padLeft(Integer.toString(Main.currentGame.experience), 3, '0');
         for (int i=0; i<expText.length(); i++)
         {
             g.drawImage(SystemFont.getCharacter(expText.charAt(i), Color.WHITE), (i+b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
@@ -759,7 +757,7 @@ public class MapViewGameState implements GameState
         b+=expText.length();
         g.drawImage(SystemFont.getCharacter(':', Color.WHITE), (b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         b++;
-        String levelText = Integer.toString(level);
+        String levelText = Integer.toString(Main.currentGame.level);
         for (int i=0; i<levelText.length(); i++)
         {
             g.drawImage(SystemFont.getCharacter(levelText.charAt(i), Color.WHITE), (i+b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
@@ -787,24 +785,24 @@ public class MapViewGameState implements GameState
                         if (mob.getPosition().equals(to))
                         {
                             printMessage("You hit the " + mob.getName().toLowerCase());
-                            mob.health -= (int) (Math.floor(Math.sqrt(level)));
+                            mob.health -= (int) (Math.floor(Math.sqrt(Main.currentGame.level)));
                             
                             if (mob.health <= 0)
                             {
                                 printMessage("You killed the " + mob.getName().toLowerCase() + "!");
-                                experience += (mob.getBaseExperience()/(level*level));
+                                Main.currentGame.experience += (mob.getBaseExperience()/(Main.currentGame.level*Main.currentGame.level));
                                 mobs.remove(mob);
                                 
-                                if (experience >= 1000)
+                                if (Main.currentGame.experience >= 1000)
                                 {
-                                    level++;
-                                    experience -= 1000;
+                                    Main.currentGame.level++;
+                                    Main.currentGame.experience -= 1000;
                                     
                                     int hpGain = Functions.rollDice(6, 2) + 3;
-                                    health += hpGain;
-                                    maxHealth += hpGain;
+                                    Main.currentGame.health += hpGain;
+                                    Main.currentGame.maxHealth += hpGain;
                                     
-                                    printMessage("You grow to level " + level + "!");
+                                    printMessage("You grow to level " + Main.currentGame.level + "!");
                                 }
                             }
                             
@@ -833,9 +831,9 @@ public class MapViewGameState implements GameState
                     printMessage("You get the key");
                     printMessage("All the windows in the room shatter!");
                     
-                    for (int x=0; x<MAP_WIDTH; x++)
+                    for (int x=0; x<mapWidth; x++)
                     {
-                        for (int y=0; y<MAP_HEIGHT; y++)
+                        for (int y=0; y<mapHeight; y++)
                         {
                             if (grid[x][y] == Tile.Window)
                             {
@@ -851,6 +849,22 @@ public class MapViewGameState implements GameState
                 // Wait a turn
                 break;
                 
+            case KeyEvent.VK_PERIOD:
+                if (e.isShiftDown())
+                {
+                    if (grid[playerx][playery] == Tile.UpStairs)
+                    {
+                        if (haveKey)
+                        {
+                            Main.setGameState(new MapViewGameState(floor+1));
+                        } else {
+                            printMessage("The stairs are locked! You need a key.");
+                        }
+                    }
+
+                    break;
+                }
+                
             default:
                 return;
         }
@@ -865,7 +879,7 @@ public class MapViewGameState implements GameState
                 if (arePointsAdjacent(playerx, playery, mob.x, mob.y, false))
                 {
                     // Attack!
-                    health -= (mob.getAttackPower() - defense);
+                    Main.currentGame.health -= Math.max(mob.getAttackPower() - Main.currentGame.defense, 0);
                     printMessage(mob.getBattleMessage());
                 } else {
                     List<Direction> path = findPath(mob.getPosition(), new Point(playerx, playery));
@@ -922,9 +936,9 @@ public class MapViewGameState implements GameState
         // Move snow
         if (snowGrow)
         {
-            for (int x=0; x<MAP_WIDTH; x++)
+            for (int x=0; x<mapWidth; x++)
             {
-                for (int y=0; y<MAP_HEIGHT; y++)
+                for (int y=0; y<mapHeight; y++)
                 {
                     if (grid[x][y] == Tile.Snow)
                     {
@@ -940,9 +954,9 @@ public class MapViewGameState implements GameState
                 }
             }
 
-            for (int x=0; x<MAP_WIDTH; x++)
+            for (int x=0; x<mapWidth; x++)
             {
-                for (int y=0; y<MAP_HEIGHT; y++)
+                for (int y=0; y<mapHeight; y++)
                 {
                     if (grid[x][y] == Tile.ShatteredWindow)
                     {
@@ -969,15 +983,15 @@ public class MapViewGameState implements GameState
         {
             if (grid[playerx][playery] == Tile.Snow)
             {
-                health--;
+                Main.currentGame.health--;
             }
         }
         
         if ((grid[playerx][playery] != Tile.Snow) && ((heartbeat == Functions.random(0, 7)) || (heartbeat == 8)))
         {
-            if (health < maxHealth)
+            if (Main.currentGame.health < Main.currentGame.maxHealth)
             {
-                health++;
+                Main.currentGame.health++;
             }
         }
         
@@ -1010,7 +1024,7 @@ public class MapViewGameState implements GameState
         calculateFieldOfView();
         
         // Handle death
-        if (health <= 0)
+        if (Main.currentGame.health <= 0)
         {
             printMessage("You have died! Press [ENTER] to quit.");
             
@@ -1031,11 +1045,11 @@ public class MapViewGameState implements GameState
     {
         if (playerx > (VIEWPORT_WIDTH/2))
         {
-            if (playerx < (MAP_WIDTH - (VIEWPORT_WIDTH/2-1)))
+            if (playerx < (mapWidth - (VIEWPORT_WIDTH/2-1)))
             {
                 viewportx = playerx - (VIEWPORT_WIDTH/2);
             } else {
-                viewportx = MAP_WIDTH - VIEWPORT_WIDTH;
+                viewportx = mapWidth - VIEWPORT_WIDTH;
             }
         } else {
             viewportx = 0;
@@ -1043,11 +1057,11 @@ public class MapViewGameState implements GameState
         
         if (playery > (VIEWPORT_HEIGHT/2))
         {
-            if (playery < (MAP_HEIGHT - (VIEWPORT_HEIGHT/2-1)))
+            if (playery < (mapHeight - (VIEWPORT_HEIGHT/2-1)))
             {
                 viewporty = playery - (VIEWPORT_HEIGHT/2);
             } else {
-                viewporty = MAP_HEIGHT - VIEWPORT_HEIGHT;
+                viewporty = mapHeight - VIEWPORT_HEIGHT;
             }
         } else {
             viewporty = 0;
@@ -1057,9 +1071,9 @@ public class MapViewGameState implements GameState
     private boolean isValidPosition(int x, int y)
     {
         if (x < 0) return false;
-        if (x > MAP_WIDTH) return false;
+        if (x > mapWidth) return false;
         if (y < 0) return false;
-        if (y > MAP_HEIGHT) return false;
+        if (y > mapHeight) return false;
         
         return true;
     }

@@ -44,7 +44,7 @@ public class Spider extends Mob
 
     public int getAttackPower()
     {
-        return 2;
+        return 1;
     }
     
     public int getBaseExperience()

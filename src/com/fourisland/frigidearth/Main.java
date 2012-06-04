@@ -30,6 +30,7 @@ public class Main extends Canvas
 {
     public static final int CANVAS_WIDTH = 624;
     public static final int CANVAS_HEIGHT = 480;
+    public static Game currentGame = new Game();
     
     private static JFrame mainWindow;
     private static Color[][] grid;
