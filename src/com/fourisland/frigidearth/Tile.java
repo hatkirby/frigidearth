@@ -109,6 +109,49 @@ public enum Tile
         {
             return new Color(162, 181, 205);
         }
+    },
+    Window {
+        public boolean isBlocked()
+        {
+            return true;
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return 'W';
+        }
+        
+        public Color getBackgroundColor()
+        {
+            return new Color(0, 63, 135);
+        }
+    },
+    ShatteredWindow {
+        public boolean isBlocked()
+        {
+            return false;
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return 'W';
+        }
+        
+        public Color getBackgroundColor()
+        {
+            return new Color(162, 181, 205);
+        }
+    },
+    Snow {
+        public boolean isBlocked()
+        {
+            return false;
+        }
+        
+        public Color getBackgroundColor()
+        {
+            return new Color(255, 250, 250);
+        }
     };
     
     public abstract boolean isBlocked();

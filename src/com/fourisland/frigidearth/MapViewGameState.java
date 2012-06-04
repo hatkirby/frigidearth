@@ -191,7 +191,7 @@ public class MapViewGameState implements GameState
                     if (ways == 0)
                     {
                         grid[newx][newy] = Tile.DownStairs;
-                        playerx=newx+1;
+                        playerx=newx;
                         playery=newy;
                         state = 10;
                         break;
@@ -673,6 +673,22 @@ public class MapViewGameState implements GameState
         
         adjustViewport();
         calculateFieldOfView();
+        
+        if (health <= 0)
+        {
+            printMessage("You have died! Press [ENTER] to quit.");
+            
+            Main.addInputable(new Inputable() {
+                @Override
+                public void processInput(KeyEvent e)
+                {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                    {
+                        System.exit(0);
+                    }
+                }
+            });
+        }
     }
     
     private void adjustViewport()
