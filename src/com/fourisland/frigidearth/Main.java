@@ -91,6 +91,11 @@ public class Main extends Canvas
         render(gameCanvas);
     }
     
+    public static GameState getGameState()
+    {
+        return gameState;
+    }
+    
     public static void addRenderable(Renderable renderable)
     {
         renderables.add(renderable);

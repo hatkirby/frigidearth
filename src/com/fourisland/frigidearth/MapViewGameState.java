@@ -899,10 +899,27 @@ public class MapViewGameState implements GameState
                     break;
                 }
                 
+            case KeyEvent.VK_I:
+                if (Main.currentGame.inventory.isEmpty())
+                {
+                    printMessage("You have no items");
+                } else {
+                    InventoryOverlay io = new InventoryOverlay();
+                    Main.addRenderable(io);
+                    Main.addInputable(io);
+                
+                    return;
+                }
+                
             default:
                 return;
         }
         
+        tick();
+    }
+     
+    public void tick()
+    {
         // Move mobs
         for (Mob mob : mobs)
         {
@@ -1122,7 +1139,7 @@ public class MapViewGameState implements GameState
         return true;
     }
     
-    private void printMessage(String message)
+    public void printMessage(String message)
     {
         String temp = message;
         

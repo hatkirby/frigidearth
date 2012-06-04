@@ -73,6 +73,8 @@ public enum Item
         
         public boolean useItem()
         {
+            ((MapViewGameState) Main.getGameState()).printMessage("There's nothing to use the key on!");
+            
             return false;
         }
     };
