@@ -795,7 +795,7 @@ public class MapViewGameState implements GameState
                                 experience += (mob.getBaseExperience()/level);
                                 mobs.remove(mob);
                                 
-                                if (experience > 1000)
+                                if (experience >= 1000)
                                 {
                                     level++;
                                     experience -= 1000;
