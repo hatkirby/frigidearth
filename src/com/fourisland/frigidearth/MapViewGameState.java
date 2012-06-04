@@ -868,7 +868,21 @@ public class MapViewGameState implements GameState
                     
                     if (path != null)
                     {
-                        mob.moveInDirection(path.get(0));
+                        Point to = path.get(0).to(mob.getPosition());
+                        boolean found = false;
+                        for (Mob m : mobs)
+                        {
+                            if (m.getPosition().equals(to))
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!found)
+                        {
+                            mob.moveInDirection(path.get(0));
+                        }
                     }
                 }
             } else {
