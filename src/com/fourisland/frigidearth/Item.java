@@ -38,7 +38,7 @@ public enum Item
             return ItemType.Scroll;
         }
         
-        public void useItem()
+        public boolean useItem()
         {
             Main.currentGame.health += 20;
             
@@ -46,6 +46,34 @@ public enum Item
             {
                 Main.currentGame.health = Main.currentGame.maxHealth;
             }
+            
+            return true;
+        }
+    },
+    Key {
+        public String getItemName()
+        {
+            return "Key";
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return 'k';
+        }
+        
+        public Color getDisplayColor()
+        {
+            return Color.YELLOW;
+        }
+        
+        public ItemType getItemType()
+        {
+            return ItemType.Special;
+        }
+        
+        public boolean useItem()
+        {
+            return false;
         }
     };
     
@@ -53,7 +81,7 @@ public enum Item
     public abstract char getDisplayCharacter();
     public abstract Color getDisplayColor();
     public abstract ItemType getItemType();
-    public abstract void useItem();
+    public abstract boolean useItem();
     
     public static Item getWeightedRandomItem()
     {

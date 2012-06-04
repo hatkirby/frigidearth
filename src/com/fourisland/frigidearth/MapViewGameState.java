@@ -46,9 +46,6 @@ public class MapViewGameState implements GameState
     private int playery = 4;
     private int viewportx = 0;
     private int viewporty = 0;
-    private int keyx;
-    private int keyy;
-    private boolean haveKey = false;
     private boolean snowGrow = false;
     private int heartbeat = 0;
     private int floor;
@@ -317,37 +314,41 @@ public class MapViewGameState implements GameState
             }
         }
         
+        ItemInstance key = new ItemInstance();
+        key.item = Item.Key;
+        
         switch (keyRoomDirection)
         {
             case North:
                 grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()] = Tile.Door;
                 grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()-1] = Tile.DirtFloor;
-                keyx = room.getX()+3;
-                keyy = room.getY()+3;
+                key.x = room.getX()+3;
+                key.y = room.getY()+3;
                 break;
                 
             case East:
                 grid[room.getX()-1][room.getY()+room.getHeight()/2] = Tile.Door;
                 grid[room.getX()][room.getY()+room.getHeight()/2] = Tile.DirtFloor;
-                keyx = room.getX()+10;
-                keyy = room.getY()+3;
+                key.x = room.getX()+10;
+                key.y = room.getY()+3;
                 break;
                 
             case South:
                 grid[room.getX()+room.getWidth()/2][room.getY()-1] = Tile.Door;
                 grid[room.getX()+room.getWidth()/2][room.getY()] = Tile.DirtFloor;
-                keyx = room.getX()+3;
-                keyy = room.getY()+10;
+                key.x = room.getX()+3;
+                key.y = room.getY()+10;
                 break;
                 
             case West:
                 grid[room.getX()+room.getWidth()][room.getY()+room.getHeight()/2] = Tile.Door;
                 grid[room.getX()+room.getWidth()-1][room.getY()+room.getHeight()/2] = Tile.DirtFloor;
-                keyx = room.getX()+3;
-                keyy = room.getY()+3;
+                key.x = room.getX()+3;
+                key.y = room.getY()+3;
                 break;
         }
         
+        items.add(key);
         rooms.add(room);
         
         adjustViewport();
@@ -710,12 +711,6 @@ public class MapViewGameState implements GameState
             }
         }
         
-        // Render key
-        if ((!haveKey) && (gridLighting[keyx][keyy]))
-        {
-            g.drawImage(SystemFont.getCharacter('k', Color.YELLOW), (keyx-viewportx)*TILE_WIDTH, (keyy-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
-        }
-        
         // Render items
         for (ItemInstance ii : items)
         {
@@ -853,32 +848,31 @@ public class MapViewGameState implements GameState
                 break;
                 
             case KeyEvent.VK_G:
-                if ((playerx == keyx) && (playery == keyy) && (!haveKey))
+                for (ItemInstance ii : items)
                 {
-                    haveKey = true;
-                    printMessage("You get the key");
-                    printMessage("All the windows in the room shatter!");
-                    
-                    for (int x=0; x<mapWidth; x++)
+                    if ((ii.x == playerx) && (ii.y == playery))
                     {
-                        for (int y=0; y<mapHeight; y++)
+                        printMessage("You get a " + ii.item.getItemName().toLowerCase());
+                        Main.currentGame.inventory.add(ii.item);
+                        items.remove(ii);
+
+                        if (ii.item == Item.Key)
                         {
-                            if (grid[x][y] == Tile.Window)
+                            printMessage("All the windows in the room shatter!");
+
+                            for (int x=0; x<mapWidth; x++)
                             {
-                                grid[x][y] = Tile.ShatteredWindow;
+                                for (int y=0; y<mapHeight; y++)
+                                {
+                                    if (grid[x][y] == Tile.Window)
+                                    {
+                                        grid[x][y] = Tile.ShatteredWindow;
+                                    }
+                                }
                             }
                         }
-                    }
-                } else {
-                    for (ItemInstance ii : items)
-                    {
-                        if ((ii.x == playerx) && (ii.y == playery))
-                        {
-                            printMessage("You get a " + ii.item.getItemName().toLowerCase());
-                            Main.currentGame.inventory.add(ii.item);
-                            items.remove(ii);
-                            break;
-                        }
+
+                        break;
                     }
                 }
                 
@@ -893,8 +887,9 @@ public class MapViewGameState implements GameState
                 {
                     if (grid[playerx][playery] == Tile.UpStairs)
                     {
-                        if (haveKey)
+                        if (Main.currentGame.inventory.contains(Item.Key))
                         {
+                            Main.currentGame.inventory.remove(Item.Key);
                             Main.setGameState(new MapViewGameState(floor+1));
                         } else {
                             printMessage("The stairs are locked! You need a key.");

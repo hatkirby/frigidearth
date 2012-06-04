@@ -49,6 +49,6 @@ public class Spider extends Mob
     
     public int getBaseExperience()
     {
-        return 200;
+        return 150;
     }
 }
