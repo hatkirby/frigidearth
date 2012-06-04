@@ -43,6 +43,7 @@ public class MapViewGameState implements GameState
     private int playery = 4;
     private int viewportx = 0;
     private int viewporty = 0;
+    private int health = 15;
     
     public MapViewGameState()
     {
@@ -549,6 +550,15 @@ public class MapViewGameState implements GameState
                     g.drawImage(SystemFont.getCharacter(messages[i].charAt(j), Color.WHITE), j*TILE_WIDTH, (VIEWPORT_HEIGHT+i)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
                 }
             }
+        }
+        
+        // Render status bar
+        g.drawImage(SystemFont.getCharacter((char) 3, Color.RED), TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        String healthText = Integer.toString(health);
+        
+        for (int i=0; i<healthText.length(); i++)
+        {
+            g.drawImage(SystemFont.getCharacter(healthText.charAt(i), Color.WHITE), (i+2)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         }
     }
     
