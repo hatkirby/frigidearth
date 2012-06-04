@@ -787,12 +787,12 @@ public class MapViewGameState implements GameState
                         if (mob.getPosition().equals(to))
                         {
                             printMessage("You hit the " + mob.getName().toLowerCase());
-                            mob.health -= level;
+                            mob.health -= (int) (Math.floor(Math.sqrt(level)));
                             
                             if (mob.health <= 0)
                             {
                                 printMessage("You killed the " + mob.getName().toLowerCase() + "!");
-                                experience += (mob.getBaseExperience()/level);
+                                experience += (mob.getBaseExperience()/(level*level));
                                 mobs.remove(mob);
                                 
                                 if (experience >= 1000)
@@ -976,13 +976,16 @@ public class MapViewGameState implements GameState
         {
             spawnTimer = 0;
             
-            Room r = rooms.get(Functions.random(0, rooms.size()-1));
-            if (r.canGenerateMonsters())
+            if (mobs.size() < (rooms.size()*2))
             {
-                Mob m = createInDepthMonster(r);
-                if (!gridLighting[m.x][m.y])
+                Room r = rooms.get(Functions.random(0, rooms.size()-1));
+                if (r.canGenerateMonsters())
                 {
-                    mobs.add(m);
+                    Mob m = createInDepthMonster(r);
+                    if (!gridLighting[m.x][m.y])
+                    {
+                        mobs.add(m);
+                    }
                 }
             }
         } else {
