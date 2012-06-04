@@ -6,6 +6,7 @@ package com.fourisland.frigidearth;
 
 import com.fourisland.frigidearth.mobs.Mouse;
 import com.fourisland.frigidearth.mobs.Rat;
+import com.fourisland.frigidearth.mobs.Spider;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -54,6 +55,8 @@ public class MapViewGameState implements GameState
     private int heartbeat = 0;
     private int floor;
     private int spawnTimer = 0;
+    private int level = 1;
+    private int experience = 0;
     
     public MapViewGameState(int floor)
     {
@@ -737,10 +740,29 @@ public class MapViewGameState implements GameState
         
         g.drawImage(SystemFont.getCharacter((char) 5, Color.GRAY), (healthText.length()+3)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         int b = healthText.length()+4;
-        String defenseText = Integer.toBinaryString(defense);
+        String defenseText = Integer.toString(defense);
         for (int i=0; i<defenseText.length(); i++)
         {
             g.drawImage(SystemFont.getCharacter(defenseText.charAt(i), Color.WHITE), (i+b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        }
+        
+        b+=defenseText.length()+1;
+        g.drawImage(SystemFont.getCharacter('E', Color.WHITE), (b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        g.drawImage(SystemFont.getCharacter('X', Color.WHITE), (b+1)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        g.drawImage(SystemFont.getCharacter('P', Color.WHITE), (b+2)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        b+=3;
+        String expText = Functions.padLeft(Integer.toString(experience), 3, '0');
+        for (int i=0; i<expText.length(); i++)
+        {
+            g.drawImage(SystemFont.getCharacter(expText.charAt(i), Color.WHITE), (i+b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        }
+        b+=expText.length();
+        g.drawImage(SystemFont.getCharacter(':', Color.WHITE), (b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        b++;
+        String levelText = Integer.toString(level);
+        for (int i=0; i<levelText.length(); i++)
+        {
+            g.drawImage(SystemFont.getCharacter(levelText.charAt(i), Color.WHITE), (i+b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         }
     }
     
@@ -765,12 +787,21 @@ public class MapViewGameState implements GameState
                         if (mob.getPosition().equals(to))
                         {
                             printMessage("You hit the " + mob.getName().toLowerCase());
-                            mob.health--;
+                            mob.health -= level;
                             
                             if (mob.health <= 0)
                             {
                                 printMessage("You killed the " + mob.getName().toLowerCase() + "!");
+                                experience += (mob.getBaseExperience()/level);
                                 mobs.remove(mob);
+                                
+                                if (experience > 1000)
+                                {
+                                    level++;
+                                    experience -= 1000;
+                                    
+                                    printMessage("You grow to level " + level + "!");
+                                }
                             }
                             
                             foundMob = true;
@@ -827,10 +858,10 @@ public class MapViewGameState implements GameState
             // Also, if it is adjacent to the player, it should attack
             if ((mob.hostile) && (canSeePlayer(mob.x, mob.y)))
             {
-                if (arePointsAdjacent(playerx, playery, mob.x, mob.y))
+                if (arePointsAdjacent(playerx, playery, mob.x, mob.y, false))
                 {
                     // Attack!
-                    health -= (mob.power - defense);
+                    health -= (mob.getAttackPower() - defense);
                     printMessage(mob.getBattleMessage());
                 } else {
                     List<Direction> path = findPath(mob.getPosition(), new Point(playerx, playery));
@@ -1095,22 +1126,22 @@ public class MapViewGameState implements GameState
         }
     }
     
-    private boolean arePointsAdjacent(int px, int py, int mx, int my)
+    private boolean arePointsAdjacent(int px, int py, int mx, int my, boolean includeDiagonals)
     {
         if (mx == (px-1))
         {
-            if (my == (py-1)) return true;
+            if ((my == (py-1)) && (includeDiagonals)) return true;
             if (my == py) return true;
-            if (my == (py+1)) return true;
+            if ((my == (py+1)) && (includeDiagonals)) return true;
         } else if (mx == px)
         {
             if (my == (py-1)) return true;
             if (my == (py+1)) return true;
         } else if (mx == (px+1))
         {
-            if (my == (py-1)) return true;
+            if ((my == (py-1)) && (includeDiagonals)) return true;
             if (my == py) return true;
-            if (my == (py+1)) return true;
+            if ((my == (py+1)) && (includeDiagonals)) return true;
         }
         
         return false;
@@ -1228,6 +1259,7 @@ public class MapViewGameState implements GameState
             case 1:
                 mobTypes.add(Mouse.class);
                 mobTypes.add(Rat.class);
+                mobTypes.add(Spider.class);
         }
         
         try

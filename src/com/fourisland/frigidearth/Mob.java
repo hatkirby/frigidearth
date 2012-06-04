@@ -17,7 +17,6 @@ public abstract class Mob
     public int y;
     public int health;
     public boolean hostile;
-    public int power;
     
     public Mob(int x, int y)
     {
@@ -41,4 +40,6 @@ public abstract class Mob
     public abstract Color getDisplayColor();
     public abstract String getName();
     public abstract String getBattleMessage();
+    public abstract int getAttackPower();
+    public abstract int getBaseExperience();
 }

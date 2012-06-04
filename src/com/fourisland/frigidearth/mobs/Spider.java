@@ -4,6 +4,7 @@
  */
 package com.fourisland.frigidearth.mobs;
 
+import com.fourisland.frigidearth.Functions;
 import com.fourisland.frigidearth.Mob;
 import java.awt.Color;
 
@@ -11,43 +12,43 @@ import java.awt.Color;
  *
  * @author hatkirby
  */
-public class Mouse extends Mob
+public class Spider extends Mob
 {
-    public Mouse(int x, int y)
+    public Spider(int x, int y)
     {
         super(x, y);
         
-        health = 1;
-        hostile = false;
+        health = Functions.rollDice(2, 5);
+        hostile = true;
     }
-    
+
     public char getDisplayCharacter()
     {
-        return 'm';
+        return 's';
     }
-    
+
     public Color getDisplayColor()
     {
-        return Color.GRAY;
+        return Color.BLACK;
     }
-    
+
     public String getName()
     {
-        return "Mouse";
+        return "Spider";
     }
-    
+
     public String getBattleMessage()
     {
-        return "The mouse bites you";
+        return "The spider bites you";
     }
-    
+
     public int getAttackPower()
     {
-        return 0;
+        return 2;
     }
     
     public int getBaseExperience()
     {
-        return 50;
+        return 200;
     }
 }

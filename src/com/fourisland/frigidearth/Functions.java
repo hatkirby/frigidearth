@@ -30,4 +30,22 @@ public class Functions
         
         return result;
     }
+    
+    public static String padLeft(String str, int length, char pad)
+    {
+        int padding = length - str.length();
+        if (str.length() > length)
+        {
+            return str;
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<padding; i++)
+        {
+            sb.append(pad);
+        }
+        
+        sb.append(str);
+        return sb.toString();
+    }
 }
