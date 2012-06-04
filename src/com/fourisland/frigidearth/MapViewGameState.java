@@ -800,6 +800,10 @@ public class MapViewGameState implements GameState
                                     level++;
                                     experience -= 1000;
                                     
+                                    int hpGain = Functions.rollDice(6, 2) + 3;
+                                    health += hpGain;
+                                    maxHealth += hpGain;
+                                    
                                     printMessage("You grow to level " + level + "!");
                                 }
                             }
@@ -953,16 +957,19 @@ public class MapViewGameState implements GameState
             if (grid[playerx][playery] == Tile.Snow)
             {
                 health--;
-            } else if (heartbeat == Functions.random(0, 3)) {
-                if (health < maxHealth)
-                {
-                    health++;
-                }
+            }
+        }
+        
+        if ((grid[playerx][playery] != Tile.Snow) && ((heartbeat == Functions.random(0, 7)) || (heartbeat == 8)))
+        {
+            if (health < maxHealth)
+            {
+                health++;
             }
         }
         
         heartbeat++;
-        if (heartbeat == 4) heartbeat = 0;
+        if (heartbeat == 8) heartbeat = 0;
         
         // Spawn mobs
         if (spawnTimer == 10)
