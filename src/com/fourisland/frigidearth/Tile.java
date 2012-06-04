@@ -26,7 +26,7 @@ public enum Tile
         
         public Color getBackgroundColor()
         {
-            return new Color(96, 51, 17);
+            return new Color(0, 63, 135);
         }
     },
     DirtFloor {
@@ -37,7 +37,7 @@ public enum Tile
         
         public Color getBackgroundColor()
         {
-            return new Color(205, 127, 50);
+            return new Color(162, 181, 205);
         }
     },
     StoneWall {
@@ -75,7 +75,7 @@ public enum Tile
         
         public Color getBackgroundColor()
         {
-            return new Color(96, 51, 17);
+            return new Color(0, 63, 135);
         }
     },
     UpStairs {
@@ -88,6 +88,11 @@ public enum Tile
         {
             return '>';
         }
+        
+        public Color getBackgroundColor()
+        {
+            return new Color(162, 181, 205);
+        }
     },
     DownStairs {
         public boolean isBlocked()
@@ -98,6 +103,11 @@ public enum Tile
         public char getDisplayCharacter()
         {
             return '<';
+        }
+        
+        public Color getBackgroundColor()
+        {
+            return new Color(162, 181, 205);
         }
     };
     
