@@ -809,6 +809,10 @@ public class MapViewGameState implements GameState
                 
                 break;
                 
+            case KeyEvent.VK_W:
+                // Wait a turn
+                break;
+                
             default:
                 return;
         }
