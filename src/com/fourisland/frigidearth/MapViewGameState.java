@@ -41,6 +41,7 @@ public class MapViewGameState implements GameState
     private String[] messages = new String[MESSAGE_HEIGHT];
     private List<Room> rooms = new ArrayList<Room>();
     private List<Mob> mobs = new ArrayList<Mob>();
+    private List<ItemInstance> items = new ArrayList<ItemInstance>();
     private int playerx = 4;
     private int playery = 4;
     private int viewportx = 0;
@@ -448,6 +449,24 @@ public class MapViewGameState implements GameState
             }
         }
         
+        // and some random items
+        perf = 30;
+        for (;;)
+        {
+            if (Functions.random(0, 100) < perf)
+            {
+                perf /= 2;
+                
+                ItemInstance ii = new ItemInstance();
+                ii.item = Item.getWeightedRandomItem();
+                ii.x = Functions.random(room.getX()+1, room.getX()+room.getWidth()-2);
+                ii.y = Functions.random(room.getY()+1, room.getY()+room.getHeight()-2);
+                items.add(ii);
+            } else {
+                break;
+            }
+        }
+        
         return true;
     }
     
@@ -697,6 +716,15 @@ public class MapViewGameState implements GameState
             g.drawImage(SystemFont.getCharacter('k', Color.YELLOW), (keyx-viewportx)*TILE_WIDTH, (keyy-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
         }
         
+        // Render items
+        for (ItemInstance ii : items)
+        {
+            if (gridLighting[ii.x][ii.y])
+            {
+                g.drawImage(SystemFont.getCharacter(ii.item.getDisplayCharacter(), ii.item.getDisplayColor()), (ii.x-viewportx)*TILE_WIDTH, (ii.y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+            }
+        }
+        
         // Render player
         g.drawImage(SystemFont.getCharacter('@', Color.WHITE), (playerx-viewportx)*TILE_WIDTH, (playery-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
         
@@ -839,6 +867,17 @@ public class MapViewGameState implements GameState
                             {
                                 grid[x][y] = Tile.ShatteredWindow;
                             }
+                        }
+                    }
+                } else {
+                    for (ItemInstance ii : items)
+                    {
+                        if ((ii.x == playerx) && (ii.y == playery))
+                        {
+                            printMessage("You get a " + ii.item.getItemName().toLowerCase());
+                            Main.currentGame.inventory.add(ii.item);
+                            items.remove(ii);
+                            break;
                         }
                     }
                 }

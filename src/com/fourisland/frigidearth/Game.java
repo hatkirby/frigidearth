@@ -4,6 +4,9 @@
  */
 package com.fourisland.frigidearth;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author hatkirby
@@ -15,4 +18,5 @@ public class Game
     public int defense = 0;
     public int level = 1;
     public int experience = 0;
+    public List<Item> inventory = new ArrayList<Item>();
 }
