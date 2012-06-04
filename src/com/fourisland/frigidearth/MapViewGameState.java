@@ -52,9 +52,13 @@ public class MapViewGameState implements GameState
     private boolean haveKey = false;
     private boolean snowGrow = false;
     private int heartbeat = 0;
+    private int floor;
+    private int spawnTimer = 0;
     
-    public MapViewGameState()
+    public MapViewGameState(int floor)
     {
+        this.floor = floor;
+        
         grid = new Tile[MAP_WIDTH][MAP_HEIGHT];
         gridLighting = new boolean[MAP_WIDTH][MAP_HEIGHT];
         
@@ -352,8 +356,6 @@ public class MapViewGameState implements GameState
     {
         int width = Functions.random(MIN_ROOM_WIDTH, MAX_ROOM_WIDTH);
         int height = Functions.random(MIN_ROOM_HEIGHT, MAX_ROOM_HEIGHT);
-        Tile floor = Tile.DirtFloor;
-        Tile wall = Tile.DirtWall;
         Room room = null;
         Rectangle bounds = null;
         
@@ -414,34 +416,35 @@ public class MapViewGameState implements GameState
             {
                 if (xtemp == room.getX())
                 {
-                    grid[xtemp][ytemp] = wall;
+                    grid[xtemp][ytemp] = Tile.DirtWall;
                 } else if (xtemp == room.getX()+room.getWidth()-1)
                 {
-                    grid[xtemp][ytemp] = wall;
+                    grid[xtemp][ytemp] = Tile.DirtWall;
                 } else if (ytemp == room.getY())
                 {
-                    grid[xtemp][ytemp] = wall;
+                    grid[xtemp][ytemp] = Tile.DirtWall;
                 } else if (ytemp == room.getY()+room.getHeight()-1)
                 {
-                    grid[xtemp][ytemp] = wall;
+                    grid[xtemp][ytemp] = Tile.DirtWall;
                 } else {
-                    grid[xtemp][ytemp] = floor;
+                    grid[xtemp][ytemp] = Tile.DirtFloor;
                 }
             }
         }
         
         rooms.add(room);
         
-        // Place mice in random rooms because yolo
-        int random = Functions.random(0,100);
-        if (random < 25)
+        // Spawn some random monsters
+        int perf = 60;
+        for (;;)
         {
-            Mob mob = new Mouse(Functions.random(room.getX()+1, room.getX()+room.getWidth()-2), Functions.random(room.getY()+1, room.getY()+room.getHeight()-2));
-            mobs.add(mob);
-        } else if (random < 50)
-        {
-            Mob mob = new Rat(Functions.random(room.getX()+1, room.getX()+room.getWidth()-2), Functions.random(room.getY()+1, room.getY()+room.getHeight()-2));
-            mobs.add(mob);
+            if (Functions.random(0, 100) < perf)
+            {
+                perf /= 2;
+                mobs.add(createInDepthMonster(room));
+            } else {
+                break;
+            }
         }
         
         return true;
@@ -450,7 +453,6 @@ public class MapViewGameState implements GameState
     private boolean makeCorridor(int x, int y, Direction direction)
     {
         int length = Functions.random(MIN_CORRIDOR_LENGTH, MAX_CORRIDOR_LENGTH);
-        Tile floor = Tile.Corridor;
         
         int xtemp = 0;
         int ytemp = 0;
@@ -480,7 +482,7 @@ public class MapViewGameState implements GameState
                 
                 for (ytemp = y; ytemp > (y-length); ytemp--)
                 {
-                    grid[xtemp][ytemp] = floor;
+                    grid[xtemp][ytemp] = Tile.Corridor;
                 }
                 
                 break;
@@ -508,7 +510,7 @@ public class MapViewGameState implements GameState
                 
                 for (xtemp = x; xtemp < (x+length); xtemp++)
                 {
-                    grid[xtemp][ytemp] = floor;
+                    grid[xtemp][ytemp] = Tile.Corridor;
                 }
                 
                 break;
@@ -536,7 +538,7 @@ public class MapViewGameState implements GameState
                 
                 for (ytemp = y; ytemp < (y+length); ytemp++)
                 {
-                    grid[xtemp][ytemp] = floor;
+                    grid[xtemp][ytemp] = Tile.Corridor;
                 }
                 
                 break;
@@ -564,7 +566,7 @@ public class MapViewGameState implements GameState
                 
                 for (xtemp = x; xtemp > (x-length); xtemp--)
                 {
-                    grid[xtemp][ytemp] = floor;
+                    grid[xtemp][ytemp] = Tile.Corridor;
                 }
                 
                 break;
@@ -744,6 +746,7 @@ public class MapViewGameState implements GameState
     
     public void processInput(KeyEvent e)
     {
+        // Handle input
         switch (e.getKeyCode())
         {
             case KeyEvent.VK_LEFT:
@@ -916,9 +919,29 @@ public class MapViewGameState implements GameState
         heartbeat++;
         if (heartbeat == 4) heartbeat = 0;
         
+        // Spawn mobs
+        if (spawnTimer == 10)
+        {
+            spawnTimer = 0;
+            
+            Room r = rooms.get(Functions.random(0, rooms.size()-1));
+            if (r.canGenerateMonsters())
+            {
+                Mob m = createInDepthMonster(r);
+                if (!gridLighting[m.x][m.y])
+                {
+                    mobs.add(m);
+                }
+            }
+        } else {
+            spawnTimer++;
+        }
+        
+        // Do viewport stuff
         adjustViewport();
         calculateFieldOfView();
         
+        // Handle death
         if (health <= 0)
         {
             printMessage("You have died! Press [ENTER] to quit.");
@@ -1183,5 +1206,36 @@ public class MapViewGameState implements GameState
         }
         
         return null;
+    }
+    
+    private Mob createInDepthMonster(Room r)
+    {
+        int x = Functions.random(r.getX()+1, r.getX()+r.getWidth()-2);
+        int y = Functions.random(r.getY()+1, r.getY()+r.getHeight()-2);
+        
+        List<Class> mobTypes = new ArrayList<Class>();
+        switch (floor)
+        {
+            case 10:
+            case 9:
+            case 8:
+            case 7:
+            case 6:
+            case 5:
+            case 4:
+            case 3:
+            case 2:
+            case 1:
+                mobTypes.add(Mouse.class);
+                mobTypes.add(Rat.class);
+        }
+        
+        try
+        {
+            return (Mob) mobTypes.get(Functions.random(0, mobTypes.size()-1)).getConstructor(int.class, int.class).newInstance(x, y);
+        } catch (Exception ex)
+        {
+            return null;
+        }
     }
 }

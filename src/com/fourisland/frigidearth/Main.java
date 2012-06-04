@@ -75,7 +75,7 @@ public class Main extends Canvas
         
         gameCanvas.createBufferStrategy(2);
         
-        setGameState(new MapViewGameState());
+        setGameState(new MapViewGameState(1));
     }
     
     public static void setGameState(GameState m_gameState)
