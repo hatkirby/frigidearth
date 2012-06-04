@@ -172,7 +172,7 @@ public class MapViewGameState implements GameState
                 {
                     Point to = dir.to(new Point(newx, newy));
                     
-                    if ((isValidPosition(newx, newy)) && (grid[to.x][to.y] == Tile.DirtFloor) || (grid[to.x][to.y] == Tile.Corridor))
+                    if ((isValidPosition(to.x, to.y)) && (grid[to.x][to.y] == Tile.DirtFloor) || (grid[to.x][to.y] == Tile.Corridor))
                     {
                         ways--;
                     }
