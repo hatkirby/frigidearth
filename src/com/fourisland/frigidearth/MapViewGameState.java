@@ -9,6 +9,7 @@ import com.fourisland.frigidearth.mobs.Rat;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,7 +66,28 @@ public class MapViewGameState implements GameState
             }
         }
         
-        makeRoom(MAP_WIDTH/2, MAP_HEIGHT/2, Direction.getRandomDirection());
+        Direction keyRoomDirection = Direction.getRandomDirection();
+        Rectangle legalBounds = null;
+        switch (keyRoomDirection)
+        {
+            case North:
+                legalBounds = new Rectangle(0, 14, MAP_WIDTH, MAP_HEIGHT-14);
+                break;
+                
+            case East:
+                legalBounds = new Rectangle(0, 0, MAP_WIDTH-14, MAP_HEIGHT);
+                break;
+                
+            case South:
+                legalBounds = new Rectangle(0, 0, MAP_WIDTH, MAP_HEIGHT-14);
+                break;
+                
+            case West:
+                legalBounds = new Rectangle(14, 0, MAP_WIDTH-14, MAP_HEIGHT);
+                break;
+        }
+        
+        makeRoom(MAP_WIDTH/2, MAP_HEIGHT/2, Direction.getRandomDirection(), legalBounds);
         
         int currentFeatures = 1;
         int objects = 300;
@@ -140,7 +162,7 @@ public class MapViewGameState implements GameState
             {
                 if (Functions.random(0, 100) <= 75)
                 {
-                    if (makeRoom(newx+xmod, newy+ymod, validTile))
+                    if (makeRoom(newx+xmod, newy+ymod, validTile, legalBounds))
                     {
                         currentFeatures++;
                         grid[newx][newy] = Tile.Door;
@@ -200,17 +222,132 @@ public class MapViewGameState implements GameState
             }
         }
         
+        // Create key room
+        Room oRoom = null;
+        for (Room r : rooms)
+        {
+            if (oRoom == null)
+            {
+                oRoom = r;
+            } else if ((keyRoomDirection == Direction.North) && (r.getY() < oRoom.getY()))
+            {
+                oRoom = r;
+            } else if ((keyRoomDirection == Direction.East) && (r.getX() > oRoom.getX()))
+            {
+                oRoom = r;
+            } else if ((keyRoomDirection == Direction.South) && (r.getY() > oRoom.getY()))
+            {
+                oRoom = r;
+            } else if ((keyRoomDirection == Direction.West) && (r.getX() < oRoom.getX()))
+            {
+                oRoom = r;
+            }
+        }
+        
+        Room room = null;
+        switch (keyRoomDirection)
+        {
+            case North:
+                room = new Room(oRoom.getX()+oRoom.getWidth()/2-3, oRoom.getY()-13, 7, 13, false);
+                break;
+                
+            case East:
+                room = new Room(oRoom.getX()+oRoom.getWidth(), oRoom.getY()+oRoom.getHeight()/2-3, 13, 7, false);
+                break;
+                
+            case South:
+                room = new Room(oRoom.getX()+oRoom.getWidth()/2-3, oRoom.getY()+oRoom.getHeight(), 7, 13, false);
+                break;
+                
+            case West:
+                room = new Room(oRoom.getX()-13, oRoom.getY()+oRoom.getHeight()/2-3, 13, 7, false);
+                break;
+        }
+        
+        for (int ytemp=room.getY(); ytemp < room.getY()+room.getHeight(); ytemp++)
+        {
+            for (int xtemp=room.getX(); xtemp < room.getX()+room.getWidth(); xtemp++)
+            {
+                if (xtemp == room.getX())
+                {
+                    if (((keyRoomDirection == Direction.North) || (keyRoomDirection == Direction.South)) && (ytemp % 2 == 0) && (ytemp != room.getY()))
+                    {
+                        grid[xtemp][ytemp] = Tile.Window;
+                    } else {
+                        grid[xtemp][ytemp] = Tile.DirtWall;
+                    }
+                } else if (xtemp == room.getX()+room.getWidth()-1)
+                {
+                    if (((keyRoomDirection == Direction.North) || (keyRoomDirection == Direction.South)) && (ytemp % 2 == 0) && (ytemp != (room.getY()+room.getHeight())))
+                    {
+                        grid[xtemp][ytemp] = Tile.Window;
+                    } else {
+                        grid[xtemp][ytemp] = Tile.DirtWall;
+                    }
+                } else if (ytemp == room.getY())
+                {
+                    if (((keyRoomDirection == Direction.West) || (keyRoomDirection == Direction.East)) && (xtemp % 2 == 0) && (xtemp != room.getX()))
+                    {
+                        grid[xtemp][ytemp] = Tile.Window;
+                    } else {
+                        grid[xtemp][ytemp] = Tile.DirtWall;
+                    }
+                } else if (ytemp == room.getY()+room.getHeight()-1)
+                {
+                    if (((keyRoomDirection == Direction.West) || (keyRoomDirection == Direction.East)) && (xtemp % 2 == 0) && (xtemp != (room.getX()+room.getWidth())))
+                    {
+                        grid[xtemp][ytemp] = Tile.Window;
+                    } else {
+                        grid[xtemp][ytemp] = Tile.DirtWall;
+                    }
+                } else {
+                    grid[xtemp][ytemp] = Tile.DirtFloor;
+                }
+            }
+        }
+        
+        switch (keyRoomDirection)
+        {
+            case North:
+                grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()] = Tile.Door;
+                grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()-1] = Tile.DirtFloor;
+                break;
+                
+            case East:
+                grid[room.getX()-1][room.getY()+room.getHeight()/2] = Tile.Door;
+                grid[room.getX()][room.getY()+room.getHeight()/2] = Tile.DirtFloor;
+                break;
+                
+            case South:
+                grid[room.getX()+room.getWidth()/2][room.getY()-1] = Tile.Door;
+                grid[room.getX()+room.getWidth()/2][room.getY()] = Tile.DirtFloor;
+                break;
+                
+            case West:
+                grid[room.getX()+room.getWidth()][room.getY()+room.getHeight()/2] = Tile.Door;
+                grid[room.getX()+room.getWidth()-1][room.getY()+room.getHeight()/2] = Tile.DirtFloor;
+                break;
+        }
+        
         adjustViewport();
         calculateFieldOfView();
     }
     
-    private boolean makeRoom(int x, int y, Direction direction)
+    private boolean makeRoom(int x, int y, Direction direction, Rectangle legalBounds)
     {
         int width = Functions.random(MIN_ROOM_WIDTH, MAX_ROOM_WIDTH);
         int height = Functions.random(MIN_ROOM_HEIGHT, MAX_ROOM_HEIGHT);
         Tile floor = Tile.DirtFloor;
         Tile wall = Tile.DirtWall;
         Room room = null;
+        Rectangle bounds = null;
+        
+        if (legalBounds == null)
+        {
+            bounds = new Rectangle(0, 0, MAP_WIDTH, MAP_HEIGHT);
+        } else {
+            bounds = legalBounds;
+        }
         
         switch (direction)
         {
@@ -237,14 +374,14 @@ public class MapViewGameState implements GameState
         
         for (int ytemp=room.getY(); ytemp < room.getY()+room.getHeight(); ytemp++)
         {
-            if ((ytemp < 0) || (ytemp > MAP_HEIGHT))
+            if ((ytemp < bounds.y) || (ytemp > bounds.y+bounds.height ))
             {
                 return false;
             }
 
             for (int xtemp=room.getX(); xtemp < room.getX()+room.getWidth(); xtemp++)
             {
-                if ((xtemp < 0) || (xtemp > MAP_WIDTH))
+                if ((xtemp < bounds.x) || (xtemp > bounds.x+bounds.width))
                 {
                     return false;
                 }
