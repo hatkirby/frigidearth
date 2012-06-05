@@ -15,7 +15,6 @@ public class Game
 {
     public int health = 15;
     public int maxHealth = 15;
-    public int defense = 0;
     public int level = 1;
     public int experience = 0;
     public List<Item> inventory = new ArrayList<Item>();
@@ -146,5 +145,15 @@ public class Game
         }
         
         return true;
+    }
+    
+    public int getAttackPower()
+    {
+        return (int) (Math.floor(Math.sqrt(level)) + (sword == null ? 0 : sword.getAttackPower()));
+    }
+    
+    public int getDefense()
+    {
+        return (helmet == null ? 0 : helmet.getDefense()) + (shield == null ? 0 : shield.getDefense()) + (shoes == null ? 0 : shoes.getDefense());
     }
 }

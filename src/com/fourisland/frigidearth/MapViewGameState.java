@@ -761,7 +761,7 @@ public class MapViewGameState implements GameState
         
         g.drawImage(SystemFont.getCharacter((char) 5, Color.GRAY), (healthText.length()+3)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         int b = healthText.length()+4;
-        String defenseText = Integer.toString(Main.currentGame.defense);
+        String defenseText = Integer.toString(Main.currentGame.getDefense());
         for (int i=0; i<defenseText.length(); i++)
         {
             g.drawImage(SystemFont.getCharacter(defenseText.charAt(i), Color.WHITE), (i+b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
@@ -808,7 +808,7 @@ public class MapViewGameState implements GameState
                         if (mob.getPosition().equals(to))
                         {
                             printMessage("You hit the " + mob.getName().toLowerCase());
-                            mob.health -= (int) (Math.floor(Math.sqrt(Main.currentGame.level)));
+                            mob.health -= Main.currentGame.getAttackPower();
                             
                             if (mob.health <= 0)
                             {
@@ -942,7 +942,7 @@ public class MapViewGameState implements GameState
                 if (arePointsAdjacent(playerx, playery, mob.x, mob.y, false))
                 {
                     // Attack!
-                    Main.currentGame.health -= Math.max(mob.getAttackPower() - Main.currentGame.defense, 0);
+                    Main.currentGame.health -= Math.max(mob.getAttackPower() - Functions.random(0,Main.currentGame.getDefense()), 0);
                     printMessage(mob.getBattleMessage());
                 } else {
                     List<Direction> path = findPath(mob.getPosition(), new Point(playerx, playery));

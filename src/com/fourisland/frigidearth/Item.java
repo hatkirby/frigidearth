@@ -70,6 +70,11 @@ public enum Item
         {
             return ItemType.Helmet;
         }
+        
+        public int getDefense()
+        {
+            return 1;
+        }
     },
     WoodenSword {
         public String getItemName()
@@ -91,6 +96,11 @@ public enum Item
         {
             return ItemType.Sword;
         }
+        
+        public int getAttackPower()
+        {
+            return 1;
+        }
     },
     WoodenShield {
         public String getItemName()
@@ -111,6 +121,11 @@ public enum Item
         public ItemType getItemType()
         {
             return ItemType.Shield;
+        }
+        
+        public int getDefense()
+        {
+            return 1;
         }
     },
     RingOfRegeneration {
@@ -243,5 +258,15 @@ public enum Item
         }
         
         return null;
+    }
+    
+    public int getAttackPower()
+    {
+        return 0;
+    }
+    
+    public int getDefense()
+    {
+        return 0;
     }
 }
