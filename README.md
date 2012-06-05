@@ -7,5 +7,6 @@ This project is still being worked on! I'm posting daily updates about my progre
 
 - [Day 1](http://www.fourisland.com/2012/06/frigid-earth-day-1/)
 - [Day 2](http://www.fourisland.com/2012/06/frigid-earth-day-2/)
+- [Day 3](http://www.fourisland.com/2012/06/frigid-earth-day-3/)
 
 &copy; 2012 Starla Insigna
