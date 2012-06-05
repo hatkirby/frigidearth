@@ -13,13 +13,37 @@ public enum ItemType
     Helmet {
         public double getRarity()
         {
-            return 0.75;
+            return 0.2;
+        }
+    },
+    Sword {
+        public double getRarity()
+        {
+            return 0.2;
+        }
+    },
+    Shield {
+        public double getRarity()
+        {
+            return 0.2;
+        }
+    },
+    Ring {
+        public double getRarity()
+        {
+            return 0.05;
+        }
+    },
+    Shoes {
+        public double getRarity()
+        {
+            return 0.25;
         }
     },
     Scroll {
         public double getRarity()
         {
-            return 0.25;
+            return 0.1;
         }
     },
     Special {

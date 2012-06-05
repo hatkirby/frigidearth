@@ -984,6 +984,12 @@ public class MapViewGameState implements GameState
                     }
                 }
             }
+            
+            // Snow weakens (but doesn't kill) mobs too!
+            if ((grid[mob.x][mob.y] == Tile.Snow) && (heartbeat % 2 == 0))
+            {
+                mob.health--;
+            }
         }
         
         // Move snow

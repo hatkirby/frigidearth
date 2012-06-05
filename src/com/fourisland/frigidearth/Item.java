@@ -70,12 +70,89 @@ public enum Item
         {
             return ItemType.Helmet;
         }
-        
-        public boolean useItem()
+    },
+    WoodenSword {
+        public String getItemName()
         {
-            // Nope not yet
-            
-            return true;
+            return "Wooden Sword";
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return '/';
+        }
+        
+        public Color getDisplayColor()
+        {
+            return new Color(128, 42, 42);
+        }
+        
+        public ItemType getItemType()
+        {
+            return ItemType.Sword;
+        }
+    },
+    WoodenShield {
+        public String getItemName()
+        {
+            return "Wooden Shield";
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return 'O';
+        }
+        
+        public Color getDisplayColor()
+        {
+            return new Color(128, 42, 42);
+        }
+        
+        public ItemType getItemType()
+        {
+            return ItemType.Shield;
+        }
+    },
+    RingOfRegeneration {
+        public String getItemName()
+        {
+            return "Ring of Regeneration";
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return 'o';
+        }
+        
+        public Color getDisplayColor()
+        {
+            return Color.YELLOW;
+        }
+        
+        public ItemType getItemType()
+        {
+            return ItemType.Ring;
+        }
+    },
+    Crocs {
+        public String getItemName()
+        {
+            return "Crocs";
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return 'd';
+        }
+        
+        public Color getDisplayColor()
+        {
+            return new Color(128, 42, 42);
+        }
+        
+        public ItemType getItemType()
+        {
+            return ItemType.Shoes;
         }
     },
     Key {
@@ -111,7 +188,22 @@ public enum Item
     public abstract char getDisplayCharacter();
     public abstract Color getDisplayColor();
     public abstract ItemType getItemType();
-    public abstract boolean useItem();
+    
+    public boolean useItem()
+    {
+        switch (getItemType())
+        {
+            case Helmet:
+            case Sword:
+            case Shield:
+            case Ring:
+            case Shoes:
+                return Main.currentGame.equipItem(this);
+                
+            default:
+                throw new java.lang.AbstractMethodError();
+        }
+    }
     
     public static Item getWeightedRandomItem()
     {
