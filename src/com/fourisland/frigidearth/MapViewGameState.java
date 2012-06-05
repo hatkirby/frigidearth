@@ -813,9 +813,9 @@ public class MapViewGameState implements GameState
                             if (mob.health <= 0)
                             {
                                 printMessage("You killed the " + mob.getName().toLowerCase() + "!");
-                                Main.currentGame.experience += (mob.getBaseExperience()/(Main.currentGame.level*Main.currentGame.level));
                                 mobs.remove(mob);
                                 
+                                Main.currentGame.experience += (mob.getBaseExperience()/(Main.currentGame.level*Main.currentGame.level));
                                 if (Main.currentGame.experience >= 1000)
                                 {
                                     Main.currentGame.level++;
@@ -826,6 +826,16 @@ public class MapViewGameState implements GameState
                                     Main.currentGame.maxHealth += hpGain;
                                     
                                     printMessage("You grow to level " + Main.currentGame.level + "!");
+                                }
+                                
+                                if (Functions.random(0, 1000) < (mob.getBaseExperience() / (floor*floor)))
+                                {
+                                    ItemInstance ii = new ItemInstance();
+                                    ii.item = Item.getWeightedRandomItem();
+                                    ii.x = mob.x;
+                                    ii.y = mob.y;
+                                    
+                                    items.add(ii);
                                 }
                             }
                             
