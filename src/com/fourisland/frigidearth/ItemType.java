@@ -10,10 +10,16 @@ package com.fourisland.frigidearth;
  */
 public enum ItemType
 {
+    Helmet {
+        public double getRarity()
+        {
+            return 0.75;
+        }
+    },
     Scroll {
         public double getRarity()
         {
-            return 1;
+            return 0.25;
         }
     },
     Special {

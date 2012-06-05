@@ -55,8 +55,8 @@ public class MapViewGameState implements GameState
     {
         this.floor = floor;
         
-        mapWidth += (50 * floor);
-        mapHeight += (50 * floor);
+        mapWidth += (50 * (floor-1));
+        mapHeight += (50 * (floor-1));
         
         grid = new Tile[mapWidth][mapHeight];
         gridLighting = new boolean[mapWidth][mapHeight];
@@ -891,6 +891,8 @@ public class MapViewGameState implements GameState
                         {
                             Main.currentGame.inventory.remove(Item.Key);
                             Main.setGameState(new MapViewGameState(floor+1));
+                            
+                            return;
                         } else {
                             printMessage("The stairs are locked! You need a key.");
                         }
@@ -1371,5 +1373,15 @@ public class MapViewGameState implements GameState
         {
             return null;
         }
+    }
+
+    public void dropItemAtPlayer(Item item)
+    {
+        ItemInstance ii = new ItemInstance();
+        ii.item = item;
+        ii.x = playerx;
+        ii.y = playery;
+        
+        items.add(ii);
     }
 }

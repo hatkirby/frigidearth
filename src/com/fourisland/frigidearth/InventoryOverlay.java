@@ -111,6 +111,15 @@ public class InventoryOverlay implements Renderable, Inputable
                     
                     return;
                 }
+                
+            case KeyEvent.VK_D:
+                ((MapViewGameState) Main.getGameState()).dropItemAtPlayer(Main.currentGame.inventory.get(id));
+                Main.currentGame.inventory.remove(id);
+                ((MapViewGameState) Main.getGameState()).tick();
+                Main.removeRenderable(this);
+                Main.removeInputable(this);
+
+                return;
         }
     }
     

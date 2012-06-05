@@ -50,6 +50,34 @@ public enum Item
             return true;
         }
     },
+    WoodenHelmet {
+        public String getItemName()
+        {
+            return "Wooden Helmet";
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return '^';
+        }
+        
+        public Color getDisplayColor()
+        {
+            return new Color(128, 42, 42);
+        }
+        
+        public ItemType getItemType()
+        {
+            return ItemType.Helmet;
+        }
+        
+        public boolean useItem()
+        {
+            // Nope not yet
+            
+            return true;
+        }
+    },
     Key {
         public String getItemName()
         {
