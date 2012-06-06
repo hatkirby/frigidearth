@@ -170,6 +170,126 @@ public enum Item
             return ItemType.Shoes;
         }
     },
+    GlassHelmet {
+        public String getItemName()
+        {
+            return "Glass Helmet";
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return '^';
+        }
+        
+        public Color getDisplayColor()
+        {
+            return Color.CYAN;
+        }
+        
+        public ItemType getItemType()
+        {
+            return ItemType.Helmet;
+        }
+        
+        public int getDefense()
+        {
+            return 0;
+        }
+    },
+    GlassSword {
+        public String getItemName()
+        {
+            return "Glass Sword";
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return '/';
+        }
+        
+        public Color getDisplayColor()
+        {
+            return Color.CYAN;
+        }
+        
+        public ItemType getItemType()
+        {
+            return ItemType.Sword;
+        }
+        
+        public int getAttackPower()
+        {
+            return 0;
+        }
+    },
+    GlassShield {
+        public String getItemName()
+        {
+            return "Glass Shield";
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return 'O';
+        }
+        
+        public Color getDisplayColor()
+        {
+            return Color.CYAN;
+        }
+        
+        public ItemType getItemType()
+        {
+            return ItemType.Shield;
+        }
+        
+        public int getDefense()
+        {
+            return 0;
+        }
+    },
+    WeddingRing {
+        public String getItemName()
+        {
+            return "Wedding Ring";
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return 'o';
+        }
+        
+        public Color getDisplayColor()
+        {
+            return Color.YELLOW;
+        }
+        
+        public ItemType getItemType()
+        {
+            return ItemType.Ring;
+        }
+    },
+    GlassSlippers {
+        public String getItemName()
+        {
+            return "Glass Slippers";
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return 'd';
+        }
+        
+        public Color getDisplayColor()
+        {
+            return Color.CYAN;
+        }
+        
+        public ItemType getItemType()
+        {
+            return ItemType.Shoes;
+        }
+    },
     Key {
         public String getItemName()
         {
