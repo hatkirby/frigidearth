@@ -194,7 +194,7 @@ public class MapViewGameState implements GameState
         {
             for (int testing = 0; testing < 1000; testing++)
             {
-                newx = Functions.random(1, mapWidth-1);
+                newx = Functions.random(1, mapWidth-2);
                 newy = Functions.random(1, mapHeight-2);
                 ways = 4;
                 
