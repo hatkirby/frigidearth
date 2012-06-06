@@ -50,6 +50,8 @@ public class MapViewGameState implements GameState
     private int heartbeat = 0;
     private int floor;
     private int spawnTimer = 0;
+    private boolean closingDoor = false;
+    private Renderable messageOverlay = null;
     
     public MapViewGameState(int floor)
     {
@@ -144,16 +146,16 @@ public class MapViewGameState implements GameState
                     
                     if (validTile != null)
                     {
-                        if (grid[newx][newy+1] == Tile.Door)
+                        if ((grid[newx][newy+1] == Tile.ClosedDoor) || (grid[newx][newy+1] == Tile.OpenDoor))
                         {
                             validTile = null;
-                        } else if (grid[newx-1][newy] == Tile.Door)
+                        } else if ((grid[newx-1][newy] == Tile.ClosedDoor) || (grid[newx-1][newy] == Tile.OpenDoor))
                         {
                             validTile = null;
-                        } else if (grid[newx][newy-1] == Tile.Door)
+                        } else if ((grid[newx][newy-1] == Tile.ClosedDoor) || (grid[newx][newy-1] == Tile.OpenDoor))
                         {
                             validTile = null;
-                        } else if (grid[newx+1][newy] == Tile.Door)
+                        } else if ((grid[newx+1][newy] == Tile.ClosedDoor) || (grid[newx+1][newy] == Tile.OpenDoor))
                         {
                             validTile = null;
                         }
@@ -173,14 +175,14 @@ public class MapViewGameState implements GameState
                     if (makeRoom(newx+xmod, newy+ymod, validTile, legalBounds))
                     {
                         currentFeatures++;
-                        grid[newx][newy] = Tile.Door;
+                        grid[newx][newy] = Tile.ClosedDoor;
                         grid[newx+xmod][newy+ymod] = Tile.DirtFloor;
                     }
                 } else {
                     if (makeCorridor(newx+xmod, newy+ymod, validTile))
                     {
                         currentFeatures++;
-                        grid[newx][newy] = Tile.Door;
+                        grid[newx][newy] = Tile.ClosedDoor;
                     }
                 }
             }
@@ -320,28 +322,28 @@ public class MapViewGameState implements GameState
         switch (keyRoomDirection)
         {
             case North:
-                grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()] = Tile.Door;
+                grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()] = Tile.ClosedDoor;
                 grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()-1] = Tile.DirtFloor;
                 key.x = room.getX()+3;
                 key.y = room.getY()+3;
                 break;
                 
             case East:
-                grid[room.getX()-1][room.getY()+room.getHeight()/2] = Tile.Door;
+                grid[room.getX()-1][room.getY()+room.getHeight()/2] = Tile.ClosedDoor;
                 grid[room.getX()][room.getY()+room.getHeight()/2] = Tile.DirtFloor;
                 key.x = room.getX()+10;
                 key.y = room.getY()+3;
                 break;
                 
             case South:
-                grid[room.getX()+room.getWidth()/2][room.getY()-1] = Tile.Door;
+                grid[room.getX()+room.getWidth()/2][room.getY()-1] = Tile.ClosedDoor;
                 grid[room.getX()+room.getWidth()/2][room.getY()] = Tile.DirtFloor;
                 key.x = room.getX()+3;
                 key.y = room.getY()+10;
                 break;
                 
             case West:
-                grid[room.getX()+room.getWidth()][room.getY()+room.getHeight()/2] = Tile.Door;
+                grid[room.getX()+room.getWidth()][room.getY()+room.getHeight()/2] = Tile.ClosedDoor;
                 grid[room.getX()+room.getWidth()-1][room.getY()+room.getHeight()/2] = Tile.DirtFloor;
                 key.x = room.getX()+3;
                 key.y = room.getY()+3;
@@ -789,142 +791,186 @@ public class MapViewGameState implements GameState
     
     public void processInput(KeyEvent e)
     {
-        // Handle input
-        switch (e.getKeyCode())
+        if (closingDoor)
         {
-            case KeyEvent.VK_LEFT:
-            case KeyEvent.VK_RIGHT:
-            case KeyEvent.VK_UP:
-            case KeyEvent.VK_DOWN:
-                Direction dir = Direction.fromKeyEvent(e);
-                Point to = dir.to(new Point(playerx, playery));
-                
-                if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].isBlocked()))
-                {
-                    // Check for mobs
-                    boolean foundMob = false;
-                    for (Mob mob : mobs)
+            switch (e.getKeyCode())
+            {
+                case KeyEvent.VK_LEFT:
+                case KeyEvent.VK_RIGHT:
+                case KeyEvent.VK_UP:
+                case KeyEvent.VK_DOWN:
+                    Direction dir = Direction.fromKeyEvent(e);
+                    Point to = dir.to(new Point(playerx, playery));
+                    
+                    if ((isValidPosition(to.x,to.y)) && (grid[to.x][to.y] == Tile.OpenDoor))
                     {
-                        if (mob.getPosition().equals(to))
+                        grid[to.x][to.y] = Tile.ClosedDoor;
+                    } else {
+                        printMessage("There is no closed door in that direction");
+                    }
+                    
+                case KeyEvent.VK_ESCAPE:
+                    Main.removeRenderable(messageOverlay);
+                    messageOverlay = null;
+                    closingDoor = false;
+                    
+                    break;
+                    
+                default:
+                    return;
+            }
+        } else {
+            switch (e.getKeyCode())
+            {
+                case KeyEvent.VK_LEFT:
+                case KeyEvent.VK_RIGHT:
+                case KeyEvent.VK_UP:
+                case KeyEvent.VK_DOWN:
+                    Direction dir = Direction.fromKeyEvent(e);
+                    Point to = dir.to(new Point(playerx, playery));
+
+                    if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].isBlocked()))
+                    {
+                        // Check for mobs
+                        boolean foundMob = false;
+                        for (Mob mob : mobs)
                         {
-                            printMessage("You hit the " + mob.getName().toLowerCase());
-                            mob.health -= Main.currentGame.getAttackPower();
-                            
-                            if (mob.health <= 0)
+                            if (mob.getPosition().equals(to))
                             {
-                                printMessage("You killed the " + mob.getName().toLowerCase() + "!");
-                                mobs.remove(mob);
-                                
-                                Main.currentGame.experience += (mob.getBaseExperience()/(Main.currentGame.level*Main.currentGame.level));
-                                if (Main.currentGame.experience >= 1000)
+                                printMessage("You hit the " + mob.getName().toLowerCase());
+                                mob.health -= Main.currentGame.getAttackPower();
+
+                                if (mob.health <= 0)
                                 {
-                                    Main.currentGame.level++;
-                                    Main.currentGame.experience -= 1000;
-                                    
-                                    int hpGain = Functions.rollDice(6, 2) + 3;
-                                    Main.currentGame.health += hpGain;
-                                    Main.currentGame.maxHealth += hpGain;
-                                    
-                                    printMessage("You grow to level " + Main.currentGame.level + "!");
+                                    printMessage("You killed the " + mob.getName().toLowerCase() + "!");
+                                    mobs.remove(mob);
+
+                                    Main.currentGame.experience += (mob.getBaseExperience()/(Main.currentGame.level*Main.currentGame.level));
+                                    if (Main.currentGame.experience >= 1000)
+                                    {
+                                        Main.currentGame.level++;
+                                        Main.currentGame.experience -= 1000;
+
+                                        int hpGain = Functions.rollDice(6, 2) + 3;
+                                        Main.currentGame.health += hpGain;
+                                        Main.currentGame.maxHealth += hpGain;
+
+                                        printMessage("You grow to level " + Main.currentGame.level + "!");
+                                    }
+
+                                    if (Functions.random(0, 1000) < (mob.getBaseExperience() / (floor*floor)))
+                                    {
+                                        ItemInstance ii = new ItemInstance();
+                                        ii.item = Item.getWeightedRandomItem();
+                                        ii.x = mob.x;
+                                        ii.y = mob.y;
+
+                                        items.add(ii);
+                                    }
                                 }
-                                
-                                if (Functions.random(0, 1000) < (mob.getBaseExperience() / (floor*floor)))
+
+                                foundMob = true;
+                                break;
+                            }
+                        }
+
+                        if (!foundMob)
+                        {
+                            playerx = to.x;
+                            playery = to.y;
+                        }
+                    } else if (grid[to.x][to.y] == Tile.ClosedDoor)
+                    {
+                        if (Functions.random(0, 99) < 50)
+                        {
+                            grid[to.x][to.y] = Tile.OpenDoor;
+                        } else {
+                            printMessage("You cannot quite get the door to open");
+                        }
+                    } else {
+                        printMessage("Blocked: " + dir.name());
+
+                        return;
+                    }
+
+                    break;
+
+                case KeyEvent.VK_G:
+                    for (ItemInstance ii : items)
+                    {
+                        if ((ii.x == playerx) && (ii.y == playery))
+                        {
+                            printMessage("You get a " + ii.item.getItemName().toLowerCase());
+                            Main.currentGame.inventory.add(ii.item);
+                            items.remove(ii);
+
+                            if (ii.item == Item.Key)
+                            {
+                                printMessage("All the windows in the room shatter!");
+
+                                for (int x=0; x<mapWidth; x++)
                                 {
-                                    ItemInstance ii = new ItemInstance();
-                                    ii.item = Item.getWeightedRandomItem();
-                                    ii.x = mob.x;
-                                    ii.y = mob.y;
-                                    
-                                    items.add(ii);
+                                    for (int y=0; y<mapHeight; y++)
+                                    {
+                                        if (grid[x][y] == Tile.Window)
+                                        {
+                                            grid[x][y] = Tile.ShatteredWindow;
+                                        }
+                                    }
                                 }
                             }
-                            
-                            foundMob = true;
+
                             break;
                         }
                     }
-                    
-                    if (!foundMob)
-                    {
-                        playerx = to.x;
-                        playery = to.y;
-                    }
-                } else {
-                    printMessage("Blocked: " + dir.name());
-                    
-                    return;
-                }
-                
-                break;
-                
-            case KeyEvent.VK_G:
-                for (ItemInstance ii : items)
-                {
-                    if ((ii.x == playerx) && (ii.y == playery))
-                    {
-                        printMessage("You get a " + ii.item.getItemName().toLowerCase());
-                        Main.currentGame.inventory.add(ii.item);
-                        items.remove(ii);
 
-                        if (ii.item == Item.Key)
+                    break;
+
+                case KeyEvent.VK_W:
+                    // Wait a turn
+                    break;
+
+                case KeyEvent.VK_PERIOD:
+                    if (e.isShiftDown())
+                    {
+                        if (grid[playerx][playery] == Tile.UpStairs)
                         {
-                            printMessage("All the windows in the room shatter!");
-
-                            for (int x=0; x<mapWidth; x++)
+                            if (Main.currentGame.inventory.contains(Item.Key))
                             {
-                                for (int y=0; y<mapHeight; y++)
-                                {
-                                    if (grid[x][y] == Tile.Window)
-                                    {
-                                        grid[x][y] = Tile.ShatteredWindow;
-                                    }
-                                }
+                                Main.currentGame.inventory.remove(Item.Key);
+                                Main.setGameState(new MapViewGameState(floor+1));
+
+                                return;
+                            } else {
+                                printMessage("The stairs are locked! You need a key.");
                             }
                         }
 
                         break;
                     }
-                }
-                
-                break;
-                
-            case KeyEvent.VK_W:
-                // Wait a turn
-                break;
-                
-            case KeyEvent.VK_PERIOD:
-                if (e.isShiftDown())
-                {
-                    if (grid[playerx][playery] == Tile.UpStairs)
-                    {
-                        if (Main.currentGame.inventory.contains(Item.Key))
-                        {
-                            Main.currentGame.inventory.remove(Item.Key);
-                            Main.setGameState(new MapViewGameState(floor+1));
-                            
-                            return;
-                        } else {
-                            printMessage("The stairs are locked! You need a key.");
-                        }
-                    }
 
-                    break;
-                }
-                
-            case KeyEvent.VK_I:
-                if (Main.currentGame.inventory.isEmpty())
-                {
-                    printMessage("You have no items");
-                } else {
-                    InventoryOverlay io = new InventoryOverlay();
-                    Main.addRenderable(io);
-                    Main.addInputable(io);
-                
+                case KeyEvent.VK_I:
+                    if (Main.currentGame.inventory.isEmpty())
+                    {
+                        printMessage("You have no items");
+                    } else {
+                        InventoryOverlay io = new InventoryOverlay();
+                        Main.addRenderable(io);
+                        Main.addInputable(io);
+
+                        return;
+                    }
+                    
+                case KeyEvent.VK_C:
+                    closingDoor = true;
+                    messageOverlay = new MessageOverlay("Close door in what direction?", 1, 2, VIEWPORT_WIDTH-2);
+                    Main.addRenderable(messageOverlay);
+                    
                     return;
-                }
-                
-            default:
-                return;
+
+                default:
+                    return;
+            }
         }
         
         tick();

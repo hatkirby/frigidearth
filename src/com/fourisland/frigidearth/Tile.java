@@ -62,7 +62,23 @@ public enum Tile
             return new Color(182, 175, 169);
         }
     },
-    Door {
+    ClosedDoor {
+        public boolean isBlocked()
+        {
+            return true;
+        }
+        
+        public char getDisplayCharacter()
+        {
+            return 'D';
+        }
+        
+        public Color getBackgroundColor()
+        {
+            return new Color(0, 63, 135);
+        }
+    },
+    OpenDoor {
         public boolean isBlocked()
         {
             return false;
@@ -75,7 +91,7 @@ public enum Tile
         
         public Color getBackgroundColor()
         {
-            return new Color(0, 63, 135);
+            return new Color(162, 181, 205);
         }
     },
     UpStairs {
