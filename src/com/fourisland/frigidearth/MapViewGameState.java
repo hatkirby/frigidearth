@@ -1105,7 +1105,7 @@ public class MapViewGameState implements GameState
             }
         }
         
-        if ((grid[playerx][playery] != Tile.Snow) && ((heartbeat == Functions.random(0, 7)) || (heartbeat == 8)))
+        if ((grid[playerx][playery] != Tile.Snow) && ((heartbeat == Functions.random(0, 7)) || (heartbeat == 8) || (Main.currentGame.ring == Item.RingOfRegeneration)))
         {
             if (Main.currentGame.health < Main.currentGame.maxHealth)
             {

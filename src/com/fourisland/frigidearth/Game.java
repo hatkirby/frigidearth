@@ -18,11 +18,11 @@ public class Game
     public int level = 1;
     public int experience = 0;
     public List<Item> inventory = new ArrayList<Item>();
-    private Item helmet = null;
-    private Item sword = null;
-    private Item shield = null;
-    private Item ring = null;
-    private Item shoes = null;
+    public Item helmet = null;
+    public Item sword = null;
+    public Item shield = null;
+    public Item ring = null;
+    public Item shoes = null;
     
     public boolean equipItem(final Item i)
     {
