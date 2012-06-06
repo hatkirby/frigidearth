@@ -4,6 +4,8 @@
  */
 package com.fourisland.frigidearth;
 
+import com.fourisland.frigidearth.mobs.FireSnake;
+import com.fourisland.frigidearth.mobs.IceSnake;
 import com.fourisland.frigidearth.mobs.Mouse;
 import com.fourisland.frigidearth.mobs.Rat;
 import com.fourisland.frigidearth.mobs.Spider;
@@ -761,8 +763,16 @@ public class MapViewGameState implements GameState
             g.drawImage(SystemFont.getCharacter(healthText.charAt(i), healthColor), (i+2)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         }
         
-        g.drawImage(SystemFont.getCharacter((char) 5, Color.GRAY), (healthText.length()+3)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        g.drawImage(SystemFont.getCharacter('/', Color.ORANGE), (healthText.length()+3)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
         int b = healthText.length()+4;
+        String powerText = Integer.toString(Main.currentGame.getAttackPower());
+        for (int i=0; i<powerText.length(); i++)
+        {
+            g.drawImage(SystemFont.getCharacter(powerText.charAt(i), Color.WHITE), (i+b)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        }
+        
+        g.drawImage(SystemFont.getCharacter((char) 5, Color.GRAY), (b+powerText.length()+1)*TILE_WIDTH, 0, TILE_WIDTH, TILE_HEIGHT, null);
+        b += powerText.length()+2;
         String defenseText = Integer.toString(Main.currentGame.getDefense());
         for (int i=0; i<defenseText.length(); i++)
         {
@@ -1425,6 +1435,8 @@ public class MapViewGameState implements GameState
             case 4:
             case 3:
             case 2:
+                mobTypes.add(FireSnake.class);
+                mobTypes.add(IceSnake.class);
             case 1:
                 mobTypes.add(Mouse.class);
                 mobTypes.add(Rat.class);
