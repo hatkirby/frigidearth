@@ -33,9 +33,6 @@ public class Main extends Canvas
     public static Game currentGame = new Game();
     
     private static JFrame mainWindow;
-    private static Color[][] grid;
-    private static int drawOffsetX = 0;
-    private static int drawOffsetY = 0;
     private static Canvas gameCanvas;
     private static List<Renderable> renderables = new CopyOnWriteArrayList<Renderable>();
     private static Stack<Inputable> inputables = new Stack<Inputable>();
