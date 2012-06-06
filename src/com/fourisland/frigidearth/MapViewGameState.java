@@ -915,6 +915,9 @@ public class MapViewGameState implements GameState
                                         if (grid[x][y] == Tile.Window)
                                         {
                                             grid[x][y] = Tile.ShatteredWindow;
+                                        } else if ((grid[x][y] == Tile.OpenDoor) || (grid[x][y] == Tile.ClosedDoor))
+                                        {
+                                            grid[x][y] = Tile.DirtFloor;
                                         }
                                     }
                                 }
