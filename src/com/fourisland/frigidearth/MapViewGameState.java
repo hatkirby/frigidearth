@@ -38,12 +38,10 @@ public class MapViewGameState implements GameState
     private final int[][] OCTET_MULTIPLIERS = new int[][] {new int[] {1,0,0,-1,-1,0,0,1}, new int[] {0,1,-1,0,0,-1,1,0}, new int[] {0,1,1,0,0,-1,-1,0}, new int[] {1,0,0,1,-1,0,0,-1}};
     private int mapWidth = 60;
     private int mapHeight = 60;
-    private Tile[][] grid;
-    private boolean[][] gridLighting;
+    private GridSpace[][] grid;
     private String[] messages = new String[MESSAGE_HEIGHT];
     private List<Room> rooms = new ArrayList<Room>();
     private List<Mob> mobs = new ArrayList<Mob>();
-    private List<ItemInstance> items = new ArrayList<ItemInstance>();
     private int playerx = 4;
     private int playery = 4;
     private int viewportx = 0;
@@ -62,18 +60,17 @@ public class MapViewGameState implements GameState
         mapWidth += (50 * (floor-1));
         mapHeight += (50 * (floor-1));
         
-        grid = new Tile[mapWidth][mapHeight];
-        gridLighting = new boolean[mapWidth][mapHeight];
+        grid = new GridSpace[mapWidth][mapHeight];
         
         for (int x=0; x<mapWidth; x++)
         {
             for (int y=0; y<mapHeight; y++)
             {
+                grid[x][y] = new GridSpace();
+                
                 if ((x == 0) || (x == mapWidth-1) || (y == 0) || (y == mapHeight-1))
                 {
-                    grid[x][y] = Tile.StoneWall;
-                } else {
-                    grid[x][y] = Tile.Unused;
+                    grid[x][y].tile = Tile.StoneWall;
                 }
             }
         }
@@ -122,24 +119,24 @@ public class MapViewGameState implements GameState
                 newy = Functions.random(1, mapHeight-1);
                 validTile = null;
                 
-                if ((grid[newx][newy] == Tile.DirtWall) || (grid[newx][newy] == Tile.Corridor))
+                if ((grid[newx][newy].tile == Tile.DirtWall) || (grid[newx][newy].tile == Tile.Corridor))
                 {
-                    if ((grid[newx][newy+1] == Tile.DirtFloor) || (grid[newx][newy+1] == Tile.Corridor))
+                    if ((grid[newx][newy+1].tile == Tile.DirtFloor) || (grid[newx][newy+1].tile == Tile.Corridor))
                     {
                         validTile = Direction.North;
                         xmod = 0;
                         ymod = -1;
-                    } else if ((grid[newx-1][newy] == Tile.DirtFloor) || (grid[newx-1][newy] == Tile.Corridor))
+                    } else if ((grid[newx-1][newy].tile == Tile.DirtFloor) || (grid[newx-1][newy].tile == Tile.Corridor))
                     {
                         validTile = Direction.East;
                         xmod = 1;
                         ymod = 0;
-                    } else if ((grid[newx][newy-1] == Tile.DirtFloor) || (grid[newx][newy-1] == Tile.Corridor))
+                    } else if ((grid[newx][newy-1].tile == Tile.DirtFloor) || (grid[newx][newy-1].tile == Tile.Corridor))
                     {
                         validTile = Direction.South;
                         xmod = 0;
                         ymod = 1;
-                    } else if ((grid[newx+1][newy] == Tile.DirtFloor) || (grid[newx+1][newy] == Tile.Corridor))
+                    } else if ((grid[newx+1][newy].tile == Tile.DirtFloor) || (grid[newx+1][newy].tile == Tile.Corridor))
                     {
                         validTile = Direction.West;
                         xmod = -1;
@@ -148,16 +145,16 @@ public class MapViewGameState implements GameState
                     
                     if (validTile != null)
                     {
-                        if ((grid[newx][newy+1] == Tile.ClosedDoor) || (grid[newx][newy+1] == Tile.OpenDoor))
+                        if ((grid[newx][newy+1].tile == Tile.ClosedDoor) || (grid[newx][newy+1].tile == Tile.OpenDoor))
                         {
                             validTile = null;
-                        } else if ((grid[newx-1][newy] == Tile.ClosedDoor) || (grid[newx-1][newy] == Tile.OpenDoor))
+                        } else if ((grid[newx-1][newy].tile == Tile.ClosedDoor) || (grid[newx-1][newy].tile == Tile.OpenDoor))
                         {
                             validTile = null;
-                        } else if ((grid[newx][newy-1] == Tile.ClosedDoor) || (grid[newx][newy-1] == Tile.OpenDoor))
+                        } else if ((grid[newx][newy-1].tile == Tile.ClosedDoor) || (grid[newx][newy-1].tile == Tile.OpenDoor))
                         {
                             validTile = null;
-                        } else if ((grid[newx+1][newy] == Tile.ClosedDoor) || (grid[newx+1][newy] == Tile.OpenDoor))
+                        } else if ((grid[newx+1][newy].tile == Tile.ClosedDoor) || (grid[newx+1][newy].tile == Tile.OpenDoor))
                         {
                             validTile = null;
                         }
@@ -177,14 +174,14 @@ public class MapViewGameState implements GameState
                     if (makeRoom(newx+xmod, newy+ymod, validTile, legalBounds))
                     {
                         currentFeatures++;
-                        grid[newx][newy] = Tile.ClosedDoor;
-                        grid[newx+xmod][newy+ymod] = Tile.DirtFloor;
+                        grid[newx][newy].tile = Tile.ClosedDoor;
+                        grid[newx+xmod][newy+ymod].tile = Tile.DirtFloor;
                     }
                 } else {
                     if (makeCorridor(newx+xmod, newy+ymod, validTile))
                     {
                         currentFeatures++;
-                        grid[newx][newy] = Tile.ClosedDoor;
+                        grid[newx][newy].tile = Tile.ClosedDoor;
                     }
                 }
             }
@@ -206,7 +203,7 @@ public class MapViewGameState implements GameState
                 {
                     Point to = dir.to(new Point(newx, newy));
                     
-                    if ((isValidPosition(to.x, to.y)) && (grid[to.x][to.y] == Tile.DirtFloor) || (grid[to.x][to.y] == Tile.Corridor))
+                    if ((isValidPosition(to.x, to.y)) && (grid[to.x][to.y].tile == Tile.DirtFloor) || (grid[to.x][to.y].tile == Tile.Corridor))
                     {
                         ways--;
                     }
@@ -216,7 +213,7 @@ public class MapViewGameState implements GameState
                 {
                     if (ways == 0)
                     {
-                        grid[newx][newy] = Tile.UpStairs;
+                        grid[newx][newy].tile = Tile.UpStairs;
                         state = 1;
                         break;
                     }
@@ -224,7 +221,7 @@ public class MapViewGameState implements GameState
                 {
                     if (ways == 0)
                     {
-                        grid[newx][newy] = Tile.DownStairs;
+                        grid[newx][newy].tile = Tile.DownStairs;
                         playerx=newx;
                         playery=newy;
                         state = 10;
@@ -284,75 +281,67 @@ public class MapViewGameState implements GameState
                 {
                     if (((keyRoomDirection == Direction.North) || (keyRoomDirection == Direction.South)) && (ytemp % 2 == 0) && (ytemp != room.getY()))
                     {
-                        grid[xtemp][ytemp] = Tile.Window;
+                        grid[xtemp][ytemp].tile = Tile.Window;
                     } else {
-                        grid[xtemp][ytemp] = Tile.DirtWall;
+                        grid[xtemp][ytemp].tile = Tile.DirtWall;
                     }
                 } else if (xtemp == room.getX()+room.getWidth()-1)
                 {
                     if (((keyRoomDirection == Direction.North) || (keyRoomDirection == Direction.South)) && (ytemp % 2 == 0) && (ytemp != (room.getY()+room.getHeight())))
                     {
-                        grid[xtemp][ytemp] = Tile.Window;
+                        grid[xtemp][ytemp].tile = Tile.Window;
                     } else {
-                        grid[xtemp][ytemp] = Tile.DirtWall;
+                        grid[xtemp][ytemp].tile = Tile.DirtWall;
                     }
                 } else if (ytemp == room.getY())
                 {
                     if (((keyRoomDirection == Direction.West) || (keyRoomDirection == Direction.East)) && (xtemp % 2 == 0) && (xtemp != room.getX()))
                     {
-                        grid[xtemp][ytemp] = Tile.Window;
+                        grid[xtemp][ytemp].tile = Tile.Window;
                     } else {
-                        grid[xtemp][ytemp] = Tile.DirtWall;
+                        grid[xtemp][ytemp].tile = Tile.DirtWall;
                     }
                 } else if (ytemp == room.getY()+room.getHeight()-1)
                 {
                     if (((keyRoomDirection == Direction.West) || (keyRoomDirection == Direction.East)) && (xtemp % 2 == 0) && (xtemp != (room.getX()+room.getWidth())))
                     {
-                        grid[xtemp][ytemp] = Tile.Window;
+                        grid[xtemp][ytemp].tile = Tile.Window;
                     } else {
-                        grid[xtemp][ytemp] = Tile.DirtWall;
+                        grid[xtemp][ytemp].tile = Tile.DirtWall;
                     }
                 } else {
-                    grid[xtemp][ytemp] = Tile.DirtFloor;
+                    grid[xtemp][ytemp].tile = Tile.DirtFloor;
                 }
             }
         }
         
-        ItemInstance key = new ItemInstance();
-        key.item = Item.Key;
-        
         switch (keyRoomDirection)
         {
             case North:
-                grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()] = Tile.ClosedDoor;
-                grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()-1] = Tile.DirtFloor;
-                key.x = room.getX()+3;
-                key.y = room.getY()+3;
+                grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()].tile = Tile.ClosedDoor;
+                grid[room.getX()+room.getWidth()/2][room.getY()+room.getHeight()-1].tile = Tile.DirtFloor;
+                grid[room.getX()+3][room.getY()+3].items.add(Item.Key);
                 break;
                 
             case East:
-                grid[room.getX()-1][room.getY()+room.getHeight()/2] = Tile.ClosedDoor;
-                grid[room.getX()][room.getY()+room.getHeight()/2] = Tile.DirtFloor;
-                key.x = room.getX()+10;
-                key.y = room.getY()+3;
+                grid[room.getX()-1][room.getY()+room.getHeight()/2].tile = Tile.ClosedDoor;
+                grid[room.getX()][room.getY()+room.getHeight()/2].tile = Tile.DirtFloor;
+                grid[room.getX()+10][room.getY()+3].items.add(Item.Key);
                 break;
                 
             case South:
-                grid[room.getX()+room.getWidth()/2][room.getY()-1] = Tile.ClosedDoor;
-                grid[room.getX()+room.getWidth()/2][room.getY()] = Tile.DirtFloor;
-                key.x = room.getX()+3;
-                key.y = room.getY()+10;
+                grid[room.getX()+room.getWidth()/2][room.getY()-1].tile = Tile.ClosedDoor;
+                grid[room.getX()+room.getWidth()/2][room.getY()].tile = Tile.DirtFloor;
+                grid[room.getX()+3][room.getY()+10].items.add(Item.Key);
                 break;
                 
             case West:
-                grid[room.getX()+room.getWidth()][room.getY()+room.getHeight()/2] = Tile.ClosedDoor;
-                grid[room.getX()+room.getWidth()-1][room.getY()+room.getHeight()/2] = Tile.DirtFloor;
-                key.x = room.getX()+3;
-                key.y = room.getY()+3;
+                grid[room.getX()+room.getWidth()][room.getY()+room.getHeight()/2].tile = Tile.ClosedDoor;
+                grid[room.getX()+room.getWidth()-1][room.getY()+room.getHeight()/2].tile = Tile.DirtFloor;
+                grid[room.getX()+3][room.getY()+3].items.add(Item.Key);
                 break;
         }
         
-        items.add(key);
         rooms.add(room);
         
         adjustViewport();
@@ -410,7 +399,7 @@ public class MapViewGameState implements GameState
                     return false;
                 }
 
-                if (grid[xtemp][ytemp] != Tile.Unused)
+                if (grid[xtemp][ytemp].tile != Tile.Unused)
                 {
                     return false;
                 }
@@ -423,18 +412,18 @@ public class MapViewGameState implements GameState
             {
                 if (xtemp == room.getX())
                 {
-                    grid[xtemp][ytemp] = Tile.DirtWall;
+                    grid[xtemp][ytemp].tile = Tile.DirtWall;
                 } else if (xtemp == room.getX()+room.getWidth()-1)
                 {
-                    grid[xtemp][ytemp] = Tile.DirtWall;
+                    grid[xtemp][ytemp].tile = Tile.DirtWall;
                 } else if (ytemp == room.getY())
                 {
-                    grid[xtemp][ytemp] = Tile.DirtWall;
+                    grid[xtemp][ytemp].tile = Tile.DirtWall;
                 } else if (ytemp == room.getY()+room.getHeight()-1)
                 {
-                    grid[xtemp][ytemp] = Tile.DirtWall;
+                    grid[xtemp][ytemp].tile = Tile.DirtWall;
                 } else {
-                    grid[xtemp][ytemp] = Tile.DirtFloor;
+                    grid[xtemp][ytemp].tile = Tile.DirtFloor;
                 }
             }
         }
@@ -462,11 +451,7 @@ public class MapViewGameState implements GameState
             {
                 perf /= 2;
                 
-                ItemInstance ii = new ItemInstance();
-                ii.item = Item.getWeightedRandomItem();
-                ii.x = Functions.random(room.getX()+1, room.getX()+room.getWidth()-2);
-                ii.y = Functions.random(room.getY()+1, room.getY()+room.getHeight()-2);
-                items.add(ii);
+                grid[Functions.random(room.getX()+1, room.getX()+room.getWidth()-2)][Functions.random(room.getY()+1, room.getY()+room.getHeight()-2)].items.add(Item.getWeightedRandomItem());
             } else {
                 break;
             }
@@ -499,7 +484,7 @@ public class MapViewGameState implements GameState
                         return false;
                     }
                     
-                    if (grid[xtemp][ytemp] != Tile.Unused)
+                    if (grid[xtemp][ytemp].tile != Tile.Unused)
                     {
                         return false;
                     }
@@ -507,7 +492,7 @@ public class MapViewGameState implements GameState
                 
                 for (ytemp = y; ytemp > (y-length); ytemp--)
                 {
-                    grid[xtemp][ytemp] = Tile.Corridor;
+                    grid[xtemp][ytemp].tile = Tile.Corridor;
                 }
                 
                 break;
@@ -527,7 +512,7 @@ public class MapViewGameState implements GameState
                         return false;
                     }
                     
-                    if (grid[xtemp][ytemp] != Tile.Unused)
+                    if (grid[xtemp][ytemp].tile != Tile.Unused)
                     {
                         return false;
                     }
@@ -535,7 +520,7 @@ public class MapViewGameState implements GameState
                 
                 for (xtemp = x; xtemp < (x+length); xtemp++)
                 {
-                    grid[xtemp][ytemp] = Tile.Corridor;
+                    grid[xtemp][ytemp].tile = Tile.Corridor;
                 }
                 
                 break;
@@ -555,7 +540,7 @@ public class MapViewGameState implements GameState
                         return false;
                     }
                     
-                    if (grid[xtemp][ytemp] != Tile.Unused)
+                    if (grid[xtemp][ytemp].tile != Tile.Unused)
                     {
                         return false;
                     }
@@ -563,7 +548,7 @@ public class MapViewGameState implements GameState
                 
                 for (ytemp = y; ytemp < (y+length); ytemp++)
                 {
-                    grid[xtemp][ytemp] = Tile.Corridor;
+                    grid[xtemp][ytemp].tile = Tile.Corridor;
                 }
                 
                 break;
@@ -583,7 +568,7 @@ public class MapViewGameState implements GameState
                         return false;
                     }
                     
-                    if (grid[xtemp][ytemp] != Tile.Unused)
+                    if (grid[xtemp][ytemp].tile != Tile.Unused)
                     {
                         return false;
                     }
@@ -591,7 +576,7 @@ public class MapViewGameState implements GameState
                 
                 for (xtemp = x; xtemp > (x-length); xtemp--)
                 {
-                    grid[xtemp][ytemp] = Tile.Corridor;
+                    grid[xtemp][ytemp].tile = Tile.Corridor;
                 }
                 
                 break;
@@ -606,7 +591,7 @@ public class MapViewGameState implements GameState
         {
             for (int y=0; y<mapHeight; y++)
             {
-                gridLighting[x][y] = false;
+                grid[x][y].lit = false;
             }
         }
         
@@ -649,12 +634,12 @@ public class MapViewGameState implements GameState
                 } else {
                     if ((dx*dx + dy*dy) < r2)
                     {
-                        gridLighting[x][y] = true;
+                        grid[x][y].lit = true;
                     }
                     
                     if (blocked)
                     {
-                        if (grid[x][y].isBlocked())
+                        if (grid[x][y].tile.isBlocked())
                         {
                             newStart = r_slope;
                             continue;
@@ -663,7 +648,7 @@ public class MapViewGameState implements GameState
                             start = newStart;
                         }
                     } else {
-                        if ((grid[x][y].isBlocked()) && (j < radius))
+                        if ((grid[x][y].tile.isBlocked()) && (j < radius))
                         {
                             blocked = true;
                             castLight(cx, cy, j+1, start, l_slope, radius, xx, xy, yx, yy, id+1);
@@ -687,10 +672,10 @@ public class MapViewGameState implements GameState
         {
             for (int y=viewporty; y<viewporty+VIEWPORT_HEIGHT; y++)
             {
-                if (gridLighting[x][y])
+                if (grid[x][y].lit)
                 {
-                    char displayChar = grid[x][y].getDisplayCharacter();
-                    Color displayColor = grid[x][y].getBackgroundColor();
+                    char displayChar = grid[x][y].tile.getDisplayCharacter();
+                    Color displayColor = grid[x][y].tile.getBackgroundColor();
 
                     if (!displayColor.equals(Color.BLACK))
                     {
@@ -700,7 +685,12 @@ public class MapViewGameState implements GameState
 
                     if (displayChar != ' ')
                     {
-                        g.drawImage(SystemFont.getCharacter(grid[x][y].getDisplayCharacter(), Color.WHITE), (x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+                        g.drawImage(SystemFont.getCharacter(grid[x][y].tile.getDisplayCharacter(), Color.WHITE), (x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
+                    }
+                    
+                    for (Item item : grid[x][y].items)
+                    {
+                        g.drawImage(SystemFont.getCharacter(item.getDisplayCharacter(), item.getDisplayColor()), (x-viewportx)*TILE_WIDTH, (y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
                     }
                 }
             }
@@ -709,18 +699,9 @@ public class MapViewGameState implements GameState
         // Render mobs
         for (Mob mob : mobs)
         {
-            if ((gridLighting[mob.x][mob.y]) && (isInViewport(mob.x, mob.y)))
+            if ((grid[mob.x][mob.y].lit) && (isInViewport(mob.x, mob.y)))
             {
                 g.drawImage(SystemFont.getCharacter(mob.getDisplayCharacter(), mob.getDisplayColor()), (mob.x-viewportx)*TILE_WIDTH, (mob.y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
-            }
-        }
-        
-        // Render items
-        for (ItemInstance ii : items)
-        {
-            if (gridLighting[ii.x][ii.y])
-            {
-                g.drawImage(SystemFont.getCharacter(ii.item.getDisplayCharacter(), ii.item.getDisplayColor()), (ii.x-viewportx)*TILE_WIDTH, (ii.y-viewporty)*TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT, null);
             }
         }
         
@@ -812,9 +793,9 @@ public class MapViewGameState implements GameState
                     Direction dir = Direction.fromKeyEvent(e);
                     Point to = dir.to(new Point(playerx, playery));
                     
-                    if ((isValidPosition(to.x,to.y)) && (grid[to.x][to.y] == Tile.OpenDoor))
+                    if ((isValidPosition(to.x,to.y)) && (grid[to.x][to.y].tile == Tile.OpenDoor))
                     {
-                        grid[to.x][to.y] = Tile.ClosedDoor;
+                        grid[to.x][to.y].tile = Tile.ClosedDoor;
                     } else {
                         printMessage("There is no closed door in that direction");
                     }
@@ -839,7 +820,7 @@ public class MapViewGameState implements GameState
                     Direction dir = Direction.fromKeyEvent(e);
                     Point to = dir.to(new Point(playerx, playery));
 
-                    if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].isBlocked()))
+                    if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].tile.isBlocked()))
                     {
                         // Check for mobs
                         boolean foundMob = false;
@@ -870,12 +851,7 @@ public class MapViewGameState implements GameState
 
                                     if (Functions.random(0, 1000) < (mob.getBaseExperience() / (floor*floor)))
                                     {
-                                        ItemInstance ii = new ItemInstance();
-                                        ii.item = Item.getWeightedRandomItem();
-                                        ii.x = mob.x;
-                                        ii.y = mob.y;
-
-                                        items.add(ii);
+                                        grid[mob.x][mob.y].items.add(Item.getWeightedRandomItem());
                                     }
                                 }
 
@@ -889,11 +865,11 @@ public class MapViewGameState implements GameState
                             playerx = to.x;
                             playery = to.y;
                         }
-                    } else if (grid[to.x][to.y] == Tile.ClosedDoor)
+                    } else if (grid[to.x][to.y].tile == Tile.ClosedDoor)
                     {
                         if (Functions.random(0, 99) < 50)
                         {
-                            grid[to.x][to.y] = Tile.OpenDoor;
+                            grid[to.x][to.y].tile = Tile.OpenDoor;
                         } else {
                             printMessage("You cannot quite get the door to open");
                         }
@@ -906,34 +882,30 @@ public class MapViewGameState implements GameState
                     break;
 
                 case KeyEvent.VK_G:
-                    for (ItemInstance ii : items)
+                    if (grid[playerx][playery].items.size() > 0)
                     {
-                        if ((ii.x == playerx) && (ii.y == playery))
+                        Item item = grid[playerx][playery].items.get(0);
+                        printMessage("You get a " + item.getItemName().toLowerCase());
+                        Main.currentGame.inventory.add(item);
+                        grid[playerx][playery].items.remove(0);
+
+                        if (item == Item.Key)
                         {
-                            printMessage("You get a " + ii.item.getItemName().toLowerCase());
-                            Main.currentGame.inventory.add(ii.item);
-                            items.remove(ii);
+                            printMessage("All the windows in the room shatter!");
 
-                            if (ii.item == Item.Key)
+                            for (int x=0; x<mapWidth; x++)
                             {
-                                printMessage("All the windows in the room shatter!");
-
-                                for (int x=0; x<mapWidth; x++)
+                                for (int y=0; y<mapHeight; y++)
                                 {
-                                    for (int y=0; y<mapHeight; y++)
+                                    if (grid[x][y].tile == Tile.Window)
                                     {
-                                        if (grid[x][y] == Tile.Window)
-                                        {
-                                            grid[x][y] = Tile.ShatteredWindow;
-                                        } else if ((grid[x][y] == Tile.OpenDoor) || (grid[x][y] == Tile.ClosedDoor))
-                                        {
-                                            grid[x][y] = Tile.DirtFloor;
-                                        }
+                                        grid[x][y].tile = Tile.ShatteredWindow;
+                                    } else if ((grid[x][y].tile == Tile.OpenDoor) || (grid[x][y].tile == Tile.ClosedDoor))
+                                    {
+                                        grid[x][y].tile = Tile.DirtFloor;
                                     }
                                 }
                             }
-
-                            break;
                         }
                     }
 
@@ -946,7 +918,7 @@ public class MapViewGameState implements GameState
                 case KeyEvent.VK_PERIOD:
                     if (e.isShiftDown())
                     {
-                        if (grid[playerx][playery] == Tile.UpStairs)
+                        if (grid[playerx][playery].tile == Tile.UpStairs)
                         {
                             if (Main.currentGame.inventory.contains(Item.Key))
                             {
@@ -1033,7 +1005,7 @@ public class MapViewGameState implements GameState
                 {
                     toDir = Direction.getRandomDirection();
                     Point to = toDir.to(mob.getPosition());
-                    if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].isBlocked()) && (!to.equals(new Point(playerx, playery))))
+                    if ((isValidPosition(to.x,to.y)) && (!grid[to.x][to.y].tile.isBlocked()) && (!to.equals(new Point(playerx, playery))))
                     {
                         boolean found = false;
                         for (Mob m : mobs)
@@ -1055,7 +1027,7 @@ public class MapViewGameState implements GameState
             }
             
             // Snow weakens (but doesn't kill) mobs too!
-            if ((grid[mob.x][mob.y] == Tile.Snow) && (heartbeat % 2 == 0))
+            if ((grid[mob.x][mob.y].tile == Tile.Snow) && (heartbeat % 2 == 0))
             {
                 mob.health--;
             }
@@ -1068,14 +1040,14 @@ public class MapViewGameState implements GameState
             {
                 for (int y=0; y<mapHeight; y++)
                 {
-                    if (grid[x][y] == Tile.Snow)
+                    if (grid[x][y].tile == Tile.Snow)
                     {
                         for (Direction d : Direction.values())
                         {
                             Point to = d.to(new Point(x, y));
-                            if ((!grid[to.x][to.y].isBlocked()) && (grid[to.x][to.y] != Tile.Snow) && (grid[to.x][to.y] != Tile.UpStairs))
+                            if ((!grid[to.x][to.y].tile.isBlocked()) && (grid[to.x][to.y].tile != Tile.Snow) && (grid[to.x][to.y].tile != Tile.UpStairs))
                             {
-                                grid[to.x][to.y] = Tile.SnowTemp;
+                                grid[to.x][to.y].tile = Tile.SnowTemp;
                             }
                         }
                     }
@@ -1086,19 +1058,19 @@ public class MapViewGameState implements GameState
             {
                 for (int y=0; y<mapHeight; y++)
                 {
-                    if (grid[x][y] == Tile.ShatteredWindow)
+                    if (grid[x][y].tile == Tile.ShatteredWindow)
                     {
                         for (Direction d : Direction.values())
                         {
                             Point to = d.to(new Point(x, y));
-                            if ((!grid[to.x][to.y].isBlocked()) && (grid[to.x][to.y] != Tile.Snow))
+                            if ((!grid[to.x][to.y].tile.isBlocked()) && (grid[to.x][to.y].tile != Tile.Snow))
                             {
-                                grid[to.x][to.y] = Tile.Snow;
+                                grid[to.x][to.y].tile = Tile.Snow;
                             }
                         }
-                    } else if (grid[x][y] == Tile.SnowTemp)
+                    } else if (grid[x][y].tile == Tile.SnowTemp)
                     {
-                        grid[x][y] = Tile.Snow;
+                        grid[x][y].tile = Tile.Snow;
                     }
                 }
             }
@@ -1109,13 +1081,13 @@ public class MapViewGameState implements GameState
         // Heartbeat
         if (heartbeat % 2 == 0)
         {
-            if (grid[playerx][playery] == Tile.Snow)
+            if (grid[playerx][playery].tile == Tile.Snow)
             {
                 Main.currentGame.health--;
             }
         }
         
-        if ((grid[playerx][playery] != Tile.Snow) && ((heartbeat == Functions.random(0, 7)) || (heartbeat == 8) || (Main.currentGame.ring == Item.RingOfRegeneration)))
+        if ((grid[playerx][playery].tile != Tile.Snow) && ((heartbeat == Functions.random(0, 7)) || (heartbeat == 8) || (Main.currentGame.ring == Item.RingOfRegeneration)))
         {
             if (Main.currentGame.health < Main.currentGame.maxHealth)
             {
@@ -1137,7 +1109,7 @@ public class MapViewGameState implements GameState
                 if (r.canGenerateMonsters())
                 {
                     Mob m = createInDepthMonster(r);
-                    if (!gridLighting[m.x][m.y])
+                    if (!grid[m.x][m.y].lit)
                     {
                         mobs.add(m);
                     }
@@ -1278,7 +1250,7 @@ public class MapViewGameState implements GameState
                 {
                     return true;
                 }
-            } while (!grid[x][y].isBlocked());
+            } while (!grid[x][y].tile.isBlocked());
             
             return false;
         } else {
@@ -1299,7 +1271,7 @@ public class MapViewGameState implements GameState
                 {
                     return true;
                 }
-            } while (!grid[x][y].isBlocked());
+            } while (!grid[x][y].tile.isBlocked());
             
             return false;
         }
@@ -1354,7 +1326,7 @@ public class MapViewGameState implements GameState
         for (Direction d : Direction.values())
         {
             Point loc = d.to(from);
-            if ((isValidPosition(loc.x, loc.y)) && (!grid[loc.x][loc.y].isBlocked()))
+            if ((isValidPosition(loc.x, loc.y)) && (!grid[loc.x][loc.y].tile.isBlocked()))
             {
                 ds.add(d);
             }
@@ -1424,7 +1396,7 @@ public class MapViewGameState implements GameState
         int y = Functions.random(r.getY()+1, r.getY()+r.getHeight()-2);
         
         List<Class> mobTypes = new ArrayList<Class>();
-        switch (floor)
+        switch (Math.max(Main.currentGame.level, floor))
         {
             case 10:
             case 9:
@@ -1454,11 +1426,6 @@ public class MapViewGameState implements GameState
 
     public void dropItemAtPlayer(Item item)
     {
-        ItemInstance ii = new ItemInstance();
-        ii.item = item;
-        ii.x = playerx;
-        ii.y = playery;
-        
-        items.add(ii);
+        grid[playerx][playery].items.add(item);
     }
 }

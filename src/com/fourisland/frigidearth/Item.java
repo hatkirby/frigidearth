@@ -17,27 +17,7 @@ import java.util.Random;
  */
 public enum Item
 {
-    ScrollOfHealing {
-        public String getItemName()
-        {
-            return "Scroll of Healing";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return '~';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return Color.YELLOW;
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Scroll;
-        }
-        
+    ScrollOfHealing("Scroll of Healing", '~', Color.YELLOW, ItemType.Scroll) {
         public boolean useItem()
         {
             Main.currentGame.health += 20;
@@ -50,267 +30,32 @@ public enum Item
             return true;
         }
     },
-    WoodenHelmet {
-        public String getItemName()
-        {
-            return "Wooden Helmet";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return '^';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return new Color(128, 42, 42);
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Helmet;
-        }
-        
+    WoodenHelmet("Wooden Helmet", '^', new Color(128, 42, 42), ItemType.Helmet) {
         public int getDefense()
         {
             return 1;
         }
     },
-    WoodenSword {
-        public String getItemName()
-        {
-            return "Wooden Sword";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return '/';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return new Color(128, 42, 42);
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Sword;
-        }
-        
+    WoodenSword("Wooden Sword", '/', new Color(128, 42, 42), ItemType.Sword) {
         public int getAttackPower()
         {
             return 1;
         }
     },
-    WoodenShield {
-        public String getItemName()
-        {
-            return "Wooden Shield";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return 'O';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return new Color(128, 42, 42);
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Shield;
-        }
-        
+    WoodenShield("Wooden Shield", 'O', new Color(128, 42, 42), ItemType.Shield) {
         public int getDefense()
         {
             return 1;
         }
     },
-    RingOfRegeneration {
-        public String getItemName()
-        {
-            return "Ring of Regeneration";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return 'o';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return Color.YELLOW;
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Ring;
-        }
-    },
-    Crocs {
-        public String getItemName()
-        {
-            return "Crocs";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return 'd';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return new Color(128, 42, 42);
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Shoes;
-        }
-    },
-    GlassHelmet {
-        public String getItemName()
-        {
-            return "Glass Helmet";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return '^';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return Color.CYAN;
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Helmet;
-        }
-        
-        public int getDefense()
-        {
-            return 0;
-        }
-    },
-    GlassSword {
-        public String getItemName()
-        {
-            return "Glass Sword";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return '/';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return Color.CYAN;
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Sword;
-        }
-        
-        public int getAttackPower()
-        {
-            return 0;
-        }
-    },
-    GlassShield {
-        public String getItemName()
-        {
-            return "Glass Shield";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return 'O';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return Color.CYAN;
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Shield;
-        }
-        
-        public int getDefense()
-        {
-            return 0;
-        }
-    },
-    WeddingRing {
-        public String getItemName()
-        {
-            return "Wedding Ring";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return 'o';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return Color.YELLOW;
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Ring;
-        }
-    },
-    GlassSlippers {
-        public String getItemName()
-        {
-            return "Glass Slippers";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return 'd';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return Color.CYAN;
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Shoes;
-        }
-    },
-    Key {
-        public String getItemName()
-        {
-            return "Key";
-        }
-        
-        public char getDisplayCharacter()
-        {
-            return 'k';
-        }
-        
-        public Color getDisplayColor()
-        {
-            return Color.YELLOW;
-        }
-        
-        public ItemType getItemType()
-        {
-            return ItemType.Special;
-        }
-        
+    RingOfRegeneration("Ring of Regeneration", 'o', Color.YELLOW, ItemType.Ring) {},
+    Crocs("Crocs", 'd', new Color(128, 42, 42), ItemType.Shoes),
+    GlassHelmet("Glass Helmet", '^', Color.CYAN, ItemType.Helmet),
+    GlassSword("Glass Sword", '/', Color.CYAN, ItemType.Sword),
+    GlassShield("Glass Shield", 'O', Color.CYAN, ItemType.Shield),
+    WeddingRing("Wedding Ring", 'o', Color.YELLOW, ItemType.Ring),
+    GlassSlippers("Glass Slippers", 'd', Color.CYAN, ItemType.Shoes),
+    Key("Key", 'k', Color.YELLOW, ItemType.Special) {
         public boolean useItem()
         {
             ((MapViewGameState) Main.getGameState()).printMessage("There's nothing to use the key on!");
@@ -319,10 +64,38 @@ public enum Item
         }
     };
     
-    public abstract String getItemName();
-    public abstract char getDisplayCharacter();
-    public abstract Color getDisplayColor();
-    public abstract ItemType getItemType();
+    private String itemName;
+    private char displayChar;
+    private Color displayColor;
+    private ItemType itemType;
+    
+    Item(String m_itemName, char m_displayChar, Color m_displayColor, ItemType m_itemType)
+    {
+        itemName = m_itemName;
+        displayChar = m_displayChar;
+        displayColor = m_displayColor;
+        itemType = m_itemType;
+    }
+    
+    public String getItemName()
+    {
+        return itemName;
+    }
+    
+    public char getDisplayCharacter()
+    {
+        return displayChar;
+    }
+    
+    public Color getDisplayColor()
+    {
+        return displayColor;
+    }
+    
+    public ItemType getItemType()
+    {
+        return itemType;
+    }
     
     public boolean useItem()
     {
